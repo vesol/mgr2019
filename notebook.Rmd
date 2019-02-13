@@ -1,0 +1,135 @@
+---
+title: "Cost coloring of bipartite graphs"
+output:
+  pdf_document:
+    toc: yes
+  html_notebook:
+    theme: united
+    toc: yes
+  html_document:
+    toc: yes
+---
+
+# Init
+```{r cho = T, results = 'hide'}
+library(igraph)
+library(parallel)
+library(tictoc)
+
+source("src/3-pseudocoloring.R")
+source("src/2-coloring.R")
+source("src/sum_coloring.R")
+source("src/27_26-4-coloring.R")
+source("src/is_colored_properly.R")
+```
+# Palette of colors
+```{r}
+k <- 4
+# c <- sort(sample(1:10, k, replace = FALSE))
+c <- c(1,2,3,4)
+```
+# Load prepared graph from file
+```{r}
+g <- read.graph("graphs/bipartite.graphml", "graphml")
+g <- delete_vertex_attr(g, "color")
+```
+# Generate graph
+```{r}
+# g <- sample_bipartite(5, 4, p=.7)
+# n <- length(V(g))
+# V(g)$weight <- sample(1:10, n, replace = TRUE)
+```
+# Save generated graph
+```{r}
+# write.graph(g, "graphs/generated.graphml", "graphml")
+```
+# Input graph
+```{r}
+n <- length(V(g))
+V(g)$name <- letters[1:n]
+plot(g, layout=layout_as_bipartite, main='input graph', vertex.size=40, vertex.label.cex=1, vertex.label = paste(V(g)$name, '/', V(g)$weight))
+```
+# Test 27/26-algorithm
+```{r}
+g1 <- g
+
+tic("27/26-approximate algorithm")
+V <- three_pseudocoloring(g1, c)
+S <- four_coloring(g1, V, c)
+toc()
+
+g1sum <- sum_coloring(S, c)
+plot(S, layout=layout_as_bipartite, palette=diverging_pal(length(unique(V(S)$color))), vertex.size=40, vertex.label.cex=1, main=paste('27/26-approximate - cost: ', g1sum), vertex.label = paste(V(S)$name, '/', V(S)$weight, '/', V(S)$color, sep=''))
+```
+# Brute force pararell
+```{r}
+counter <- 0
+tic('brute force algorithm')
+tic('generating all coloring combinations and calculate sums')
+colorings <- mclapply(seq(1,k**n), mc.cores = detectCores(), function(j) {
+  coloring <- sapply(as.list(rep(j, n)), function(x){
+    i <- parent.frame()$i[]
+    index <- 1 + (x / k ** (i-1)) %% k
+    return(c[index])
+  })
+  
+  graph <- g
+  V(graph)$color <- coloring
+  
+  if(colored_properly(graph)) {
+    sum <- color_sum(graph, c)
+    return(list(sum, coloring))
+  }
+
+  return(list(0, coloring))
+})
+toc()
+g2 <- g
+V(g2)$color <- rep(4, n)
+g2sum <- color_sum(g2, c)
+tic('combining results')
+for(i in 1:k**n) {
+  tmpSum <- colorings[[i]][[1]]
+  if(tmpSum != 0 && tmpSum < g2sum) {
+    g2sum <- tmpSum
+    V(g2)$color = colorings[[i]][[2]]
+  }
+}
+toc()
+toc()
+
+plot(g2, layout=layout_as_bipartite, palette=diverging_pal(length(unique(V(g2)$color))), vertex.size=40, vertex.label.cex=1, main=paste('Brute Force - sum:', g2sum), vertex.label = paste(V(g2graph)$name, '/', V(g2)$weight, '/', V(g2)$color, sep=''))
+```
+#
+```{r}
+n <- 3
+g3 <- make_full_bipartite_graph(floor(n/2), ceiling(n/2))
+g3
+```
+# Number of combinations
+```{r}
+for (n in 1:20) {
+  g3 <- make_full_bipartite_graph(floor(n/2), ceiling(n/2))
+  
+  proper <- 0
+    
+  for(j in k**n) {
+    coloring <- sapply(as.list(rep(j, n)), function(x){
+      i <- parent.frame()$i[]
+      index <- 1 + (x / k ** (i-1)) %% k
+      return(c[index])
+    })
+    
+    V(g3)$color <- coloring
+    
+    if(colored_properly(graph)) {
+      proper <- proper + 1
+    }
+    
+  }
+  
+  print(n)
+  print(k**n)
+  print('next')
+}
+```

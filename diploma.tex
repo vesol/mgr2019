@@ -2,6 +2,9 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[MeX]{polski}
+\usepackage{graphicx}
+\usepackage[outdir=./]{epstopdf}
+\usepackage{listings}
 
 \title{Praca dyplomowa magisterska}
 \author{Tomasz Wesołowski}
@@ -17,17 +20,35 @@
 
 Szeregowanie zadań kompatybilnych na maszynach jednorodnych.
 
-\subsection{Kosztowne kolorowanie grafów ważonych}
+\section{Kolorowanie grafów dwudzielnych}
 
-Redukcja problemu szeregowania do kolorowania grafów ważonych.
+\subsection*{Dane wejściowe}
 
-\section{Opis algorytmów}
+Danymi wejścowymi jest więc graf dwudzielny ważony oraz paleta czterech kolorów z przypisanymi do nich wagami. Wagi kolory układamy niemalejąco.
 
-\subsection{Algorytm dokładny $\theta (nm)$}
+\subsection*{Weryfikacja poprawności kolorowania}
 
-ten o złożoności $\theta (nm)$ 
+\lstinputlisting[language=R]{src/is_colored_properly.R}
 
-\section{Dane testowe}
+\subsection*{Koszt kolowania grafu ważonego}
+
+\lstinputlisting[language=R]{src/sum_coloring.R}
+
+\subsection{27/26-przybliżony}
+
+\lstinputlisting[language=R]{src/27_26-4-coloring.R}
+
+\subsubsection*{3-pseudo kolorowanie}
+
+\lstinputlisting[language=R]{src/3-pseudocoloring.R}
+
+\subsubsection*{Optymalne 2-kolorowanie}
+
+\lstinputlisting[language=R]{src/2-coloring.R}
+
+\subsection{Brute Force}
+
+\section{Porównanie algorytmów}
 
 Opis metody generowania grafów dwudzielnych ważonych.
 
