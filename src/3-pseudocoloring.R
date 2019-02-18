@@ -9,6 +9,7 @@ three_pseudocoloring <- function(graph, colors) {
   
   D <- make_empty_graph() + vertices(as_ids(Va)) + vertices(as_ids(Vb)) + vertices(Va_) + vertices(Vb_) + vertices(c('s', 't')) #V
   
+  V(D)$color <- 'orange'
   for(i in 1:length(Va)) {
     name <- Va[i]$name
     w <- Va[i]$weight
@@ -24,17 +25,20 @@ three_pseudocoloring <- function(graph, colors) {
   }
   
   for(i in 1:length(E(g))) {
-    from <- V(g)[ends(g, E(g)[i])[1]]
-    to <- V(g)[ends(g, E(g)[i])[2]]
     w <- max(V(g)$weight) * l + 100 # Here should be Inf
     
-    if (from$type==TRUE && to$type==FALSE) {
-      D <- D + edge(from$name, to$name, weight = w)                         # A_12
-      D <- D + edge(paste(to$name, '*', sep=''), paste(from$name, '*', sep=''), weight = w) # A_21
+    v1 <- V(g)[ends(g, E(g)[i])[1]]
+    v2 <- V(g)[ends(g, E(g)[i])[2]]
+    
+    if (v1$type != v2$type) {
+      D <- D + edge(v1$name, v2$name, weight = w)                                         # A_12
+      D <- D + edge(paste(v2$name, '*', sep=''), paste(v1$name, '*', sep=''), weight = w) # A_21
     }
   }
   
   stCuts <- st_min_cuts(D, source = "s", target = "t")
+  plot(D, edge.label = E(D)$weight)
+  print(stCuts)
   T <- D - stCuts$partition1s[[1]]
   S <- delete.vertices(D, V(T)$name)
   

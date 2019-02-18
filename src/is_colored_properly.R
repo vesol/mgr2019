@@ -1,11 +1,10 @@
-colored_properly <- function(graph) {
-  edges <- lapply(E(graph), function(x) {
-    tmpGraph <- graph
-    vertices <- ends(tmpGraph, x)
-    colors <- V(tmpGraph)[vertices]$color
+is_colored_properly <- function(graph) {
+  verticleColoredProperly <- lapply(V(graph), function(i) {
+    v <- V(graph)[i]
+    n <- neighbors(graph, v)
     
-    return(length(unique(colors)) > 1)
+    return(all(n$color != v$color))
   })
-  return(!any(edges == FALSE))
+  
+  return(all(verticleColoredProperly == TRUE))
 }
-```

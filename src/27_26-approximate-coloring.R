@@ -1,4 +1,5 @@
-four_coloring <- function(graph, threePseudoColoring, colors) {
+four_coloring <- function(graph, colors) {
+  threePseudoColoring <- three_pseudocoloring(graph, colors)
   V1 <- threePseudoColoring[[1]]
   V2 <- threePseudoColoring[[2]]
   V3 <- threePseudoColoring[[3]]
@@ -23,6 +24,7 @@ four_coloring <- function(graph, threePseudoColoring, colors) {
   
   S3 <- graph
   S3small <- induced_subgraph(S3, V3)
+  
   S3v <- two_coloring(S3small)
   S3a <- S3v[[1]]
   S3b <- S3v[[2]]
