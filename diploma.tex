@@ -34,9 +34,9 @@ Danymi wejścowymi jest więc graf dwudzielny ważony oraz paleta czterech kolor
 
 \lstinputlisting[language=R]{src/sum_coloring.R}
 
-\subsection{27/26-przybliżony}
+\subsection{Algorytm 27/26-przybliżony}
 
-\lstinputlisting[language=R]{src/27_26-4-coloring.R}
+\lstinputlisting[language=R]{src/27_26-approximate-coloring.R}
 
 \subsubsection*{3-pseudo kolorowanie}
 
@@ -46,12 +46,16 @@ Danymi wejścowymi jest więc graf dwudzielny ważony oraz paleta czterech kolor
 
 \lstinputlisting[language=R]{src/2-coloring.R}
 
-\subsection{Brute Force}
+\subsection{Algorytm siłowy}
+
+Algorytm siłowy polega na wygenerowaniu wszystkich możliwych kombinacji pokolorowania grafu i sprawdzeniu czy jest to pokolorowanie poprawne. Następnie z wszystkich prawidłowych kolorowań wybieramy to, które ma najmniejszą sumę kolorowania. Ilość wszystkich kombinacji wynosi $n^k$, gdzie $n$ to ilość wierzchołków grafu, a $k$ to ilość różnych kolorów.
+
+\lstinputlisting[language=R]{src/brute_force.R}
 
 \section{Porównanie algorytmów}
 
 Opis metody generowania grafów dwudzielnych ważonych.
 
 \section{Analiza wyników}
- 
+
 \end{document}

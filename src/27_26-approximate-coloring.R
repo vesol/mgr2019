@@ -11,6 +11,8 @@ four_coloring <- function(graph, colors) {
   
   V(S1)[name %in% S1a]$color <- colors[1]
   V(S1)[name %in% S1b]$color <- colors[2]
+  sum1 <- sum_coloring(S1, colors)
+  plot(S1, layout=layout_as_bipartite, main = paste('S1:', sum1))
   
   S2 <- graph
   S2small <- induced_subgraph(S2, c(V2, V3))
@@ -21,6 +23,12 @@ four_coloring <- function(graph, colors) {
   V(S2)[name %in% V1]$color <- colors[1]
   V(S2)[name %in% S2a]$color <- colors[2]
   V(S2)[name %in% S2b]$color <- colors[3]
+  sum2 <- sum_coloring(S2, colors)
+  plot(S2, layout=layout_as_bipartite, main = paste('S2:', sum2))
+  
+  if (sum1 == sum2) {
+    return(S1)
+  }
   
   S3 <- graph
   S3small <- induced_subgraph(S3, V3)
@@ -33,16 +41,10 @@ four_coloring <- function(graph, colors) {
   V(S3)[name %in% V2]$color <- colors[2]
   V(S3)[name %in% S3a]$color <- colors[4]
   V(S3)[name %in% S3b]$color <- colors[3]
-  
-  sum1 <- sum_coloring(S1, colors)
-  sum2 <- sum_coloring(S2, colors)
   sum3 <- sum_coloring(S3, colors)
+  plot(S3, layout=layout_as_bipartite, main = paste('S3:', sum3))
   
-  if (sum1 == min(sum1, sum2, sum3)) {
-    return(S1)
-  }
-  
-  if (sum2 == min(sum1, sum2, sum3)) {
+  if (sum2 < sum3) {
     return(S2)
   }
   
