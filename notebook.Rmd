@@ -29,17 +29,14 @@ k <- 4
 # c <- sort(sample(1:10, k, replace = FALSE))
 c <- c(1,2,3,4)
 
-# g <- read.graph("graphs/bipartite-mirror.graphml", "graphml")
+g <- read.graph("graphs/p0_6.graphml", "graphml")
 # g <- delete_vertex_attr(g, "color")
 
-n = 8
-g <- sample_bipartite(floor(n/2), ceiling(n/2), p=0.6)
-V(g)$weight = sample(c(1,2,6,24), n, replace = TRUE)
+# n = 8
+# g <- sample_bipartite(floor(n/2), ceiling(n/2), p=0.6)
+# V(g)$weight = sample(c(1,2,6,24), n, replace = TRUE)
 
 V(g)$name <- letters[1:n]
-
-V(g)$name
-V(g)$type
 
 plot(g, layout=layout_as_bipartite, main='input graph', vertex.size=40, vertex.label.cex=1, vertex.label = paste(V(g)$name, '/', V(g)$weight))
 ```
@@ -61,6 +58,10 @@ toc()
 
 Bsum <- sum_coloring(B, c)
 plot(B, layout=layout_as_bipartite, palette=diverging_pal(length(unique(V(B)$color))), vertex.size=40, vertex.label.cex=1, main=paste('Brute Force - sum:', Bsum), vertex.label = paste(V(B)$name, '/', V(B)$weight, '/', V(B)$color, sep=''))
+```
+# Write graph
+```{r}
+write_graph(g, "graphs/p0_6.graphml", "graphml")
 ```
 # Generate graphs to tests
 ```{r}

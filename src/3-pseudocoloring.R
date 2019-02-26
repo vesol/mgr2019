@@ -9,47 +9,97 @@ three_pseudocoloring <- function(graph, colors) {
   
   D <- make_empty_graph() + vertices(as_ids(Va)) + vertices(as_ids(Vb)) + vertices(Va_) + vertices(Vb_) + vertices(c('s', 't')) #V
   
+  As1 <- c()
+  A11 <- c()
+  
   for(i in 1:length(Va)) {
     name <- Va[i]$name
+    name_ <- paste(name, '*', sep = '')
     w <- Va[i]$weight
-    D <- D + edge('s', name, weight = w)                            # A_s1
-    D <- D + edge(paste(name, '*', sep = ''), name, weight = w * l) # A_11
+    
+    D <- D + edge('s', name, weight = w)       # A_s1
+    D <- D + edge(name_, name, weight = w * l) # A_11
+    
+    As1 <- c(As1, paste('s' , '-(', w, ')>', name, sep = ''))
+    A11 <- c(A11, paste(name_, '-(' , w, ')>', name, sep=''))
   }
+  
+  print('As1')
+  print(As1)
+  print('A11')
+  print(A11)
+  
+  A2t <- c()
+  A22 <- c()
   
   for(i in 1:length(Vb)) {
     name <- Vb[i]$name
+    name_ <- paste(name, '*', sep = '')
+    
     w <- Vb[i]$weight
   
-    D <- D + edge(name, 't', weight = w)                          # A_2t
-    D <- D + edge(name, paste(name, '*', sep=''), weight = w * l) # A_22
+    D <- D + edge(name, 't', weight = w)       # A_2t
+    D <- D + edge(name, name_, weight = w * l) # A_22
+    
+    A2t <- c(A2t, paste(name, '-(', w, ')>', 't', sep=''))
+    A22 <- c(A22, paste(name, '-(', w, ')>', name_, sep=''))
   }
+  
+  print('A2t')
+  print(A2t)
+  print('A22')
+  print(A22)
+  
+  A12 <- c()
+  A21 <- c()
   
   for(i in 1:length(E(g))) {
-    w <- max(V(g)$weight) * l + 1000000 # Here should be Inf
+    w <- 1000000000 # Here should be Inf
 
-    v1 <- V(g)[ends(g, E(g)[i])][type==TRUE]
-    v2 <- V(g)[ends(g, E(g)[i])][type==FALSE]
+    v1 <- V(g)[ends(g, E(g)[i])][type==TRUE]$name
+    v1_ <- paste(v1, '*', sep='')
+    v2 <- V(g)[ends(g, E(g)[i])][type==FALSE]$name
+    v2_ <- paste(v2, '*', sep='')
     
-    D <- D + edge(v1$name, v2$name, weight = w)                                         # A_12
-    D <- D + edge(paste(v2$name, '*', sep=''), paste(v1$name, '*', sep=''), weight = w) # A_21
+    D <- D + edge(v1, v2, weight = w)  # A_12
+    D <- D + edge(v2_, v1_, weight = w) # A_21
+    
+    A12 <- c(A12, paste(v1, '-(' , w, ')>', v2, sep=''))
+    A21 <- c(A21, paste(v2_, '-(' , w, ')>', v1_, sep=''))
   }
   
+  print('A12')
+  print(A12)
+  print('A21')
+  print(A21)
+  
   stCuts <- st_min_cuts(D, source = "s", target = "t")
+  print(stCuts)
   
-  T <- D - stCuts$partition1s[[1]]
-  S <- delete.vertices(D, V(T)$name)
-  
-  print(V(T))
-  print(V(S))
-  
-  V1 <-union(intersect(V(S)$name, Va$name), intersect(V(T)$name, Vb$name))
-  V2 <- gsub('[*]', '', union(intersect(V(S)$name, Vb_), intersect(V(T)$name, Va_)))
-  V3 <- intersect(setdiff(V(D)$name, union(V1, V2)), union(Va$name, Vb$name))
-  
-  print(V1)
-  print(V2)
-  print(V3)
-  print(c(V1, V2))
-  
-  return(list(V1,V2,V3))
+  for(i in 1:length(stCuts$cuts)) {
+    cuts <- stCuts$cuts[[i]]
+    
+    if(all(ends(D, cuts)[,1] == 's') || all(ends(D, cuts)[,2] == 't'))  {
+      next;
+    }
+    
+    T <- D - stCuts$partition1s[[i]]
+    S <- delete.vertices(D, V(T)$name)
+    
+    print(Va)
+    print(Vb)
+    
+    print(V(T))
+    print(V(S))
+    
+    V1 <-union(intersect(V(S)$name, Va$name), intersect(V(T)$name, Vb$name))
+    V2 <- gsub('[*]', '', union(intersect(V(S)$name, Vb_), intersect(V(T)$name, Va_)))
+    V3 <- intersect(setdiff(V(D)$name, union(V1, V2)), union(Va$name, Vb$name))
+    
+    print(V1)
+    print(V2)
+    print(V3)
+    
+    return(list(V1,V2,V3))
+  }
 }
