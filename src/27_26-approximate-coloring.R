@@ -1,9 +1,7 @@
 four_coloring <- function(graph, colors) {
   threePseudoColoring <- three_pseudocoloring(graph, colors)
-  V1 <- threePseudoColoring[[1]]
-  V2 <- threePseudoColoring[[2]]
-  V3 <- threePseudoColoring[[3]]
   
+  V1 <- threePseudoColoring[[1]]
   S1 <- graph
   S1v <- two_coloring(S1)
   S1a <- S1v[[1]]
@@ -14,6 +12,13 @@ four_coloring <- function(graph, colors) {
   sum1 <- sum_coloring(S1, colors)
   plot(S1, layout=layout_as_bipartite, main = paste('S1:', sum1))
   
+  if (length(threePseudoColoring) == 2) {
+    V3 <- c()
+  } else {
+    V3 <- threePseudoColoring[[3]]
+  }
+  
+  V2 <- threePseudoColoring[[2]]
   S2 <- graph
   S2small <- induced_subgraph(S2, c(V2, V3))
   S2v <- two_coloring(S2small)
@@ -25,6 +30,14 @@ four_coloring <- function(graph, colors) {
   V(S2)[name %in% S2b]$color <- colors[3]
   sum2 <- sum_coloring(S2, colors)
   plot(S2, layout=layout_as_bipartite, main = paste('S2:', sum2))
+  
+  if (length(V3) == 0) {
+    if (sum1 == min(sum1, sum2)) {
+      return(S1)
+    }
+    
+    return(S2)
+  }
   
   S3 <- graph
   S3small <- induced_subgraph(S3, V3)

@@ -29,12 +29,12 @@ k <- 4
 # c <- sort(sample(1:10, k, replace = FALSE))
 c <- c(1,2,3,4)
 
-g <- read.graph("graphs/p0_6.graphml", "graphml")
+# g <- read.graph("graphs/p0_6.graphml", "graphml")
 # g <- delete_vertex_attr(g, "color")
 
-# n = 8
-# g <- sample_bipartite(floor(n/2), ceiling(n/2), p=0.6)
-# V(g)$weight = sample(c(1,2,6,24), n, replace = TRUE)
+n = 8
+g <- sample_bipartite(floor(n/2), ceiling(n/2), p=0.4)
+V(g)$weight = sample(c(1,2,6,24), n, replace = TRUE)
 
 V(g)$name <- letters[1:n]
 
@@ -47,7 +47,7 @@ S <- four_coloring(g, c)
 toc()
 
 Ssum <- sum_coloring(S, c)
-V(S)$color
+
 plot(S, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main=paste('27/26-approximate - cost: ', Ssum), vertex.label = paste(V(S)$name, '/', V(S)$weight, '/', V(S)$color, sep=''))
 ```
 # Brute force
