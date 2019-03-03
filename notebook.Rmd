@@ -29,16 +29,37 @@ k <- 4
 # c <- sort(sample(1:10, k, replace = FALSE))
 c <- c(1,2,3,4)
 
-# g <- read.graph("graphs/p0_6.graphml", "graphml")
-# g <- delete_vertex_attr(g, "color")
-
-n = 8
-g <- sample_bipartite(floor(n/2), ceiling(n/2), p=0.4)
-V(g)$weight = sample(c(1,2,6,24), n, replace = TRUE)
-
+g <- read.graph("graphs/bipartite.graphml", "graphml")
+g <- delete_vertex_attr(g, "color")
+# 
+# n = 8
+# g <- sample_bipartite(floor(n/2), ceiling(n/2), p=0.4)
+# V(g)$weight = sample(c(1,2,6,24), n, replace = TRUE)
+# 
 V(g)$name <- letters[1:n]
 
 plot(g, layout=layout_as_bipartite, main='input graph', vertex.size=40, vertex.label.cex=1, vertex.label = paste(V(g)$name, '/', V(g)$weight))
+```
+# ds
+```{r}
+Va <- c('a', 'b', 'c', 'd')
+Va_ <- c('a*', 'b*', 'c*', 'd*')
+Vb <- c('e', 'f', 'g', 'h')
+Vb_ <- c('e*', 'f*', 'g*', 'h*')
+Vt <- c('e', 'c',' d', 'e*', 'f*', 'b*', 'c*', 'd*', 't')
+Vs <- c('f', 'g', 'h', 'a', 'b', 'g*', 'h*', 'a*', 's')
+
+test1 <- intersect(Vt, Va_)
+test2 <- paste(intersect(Va, Vs), '*', sep='')
+
+to_move <- c(intersect(test1, test2))
+
+'%!in%' <- function(x,y)!('%in%'(x,y))
+
+Vt <- Vt[Vt %!in% to_move ]
+Vs <- c(Vs, to_move)
+Vt
+Vs
 ```
 # Test 27/26-algorithm
 ```{r}
@@ -61,7 +82,7 @@ plot(B, layout=layout_as_bipartite, palette=diverging_pal(length(unique(V(B)$col
 ```
 # Write graph
 ```{r}
-write_graph(g, "graphs/p0_6.graphml", "graphml")
+write_graph(g, "graphs/points_7_8_case.graphml", "graphml")
 ```
 # Generate graphs to tests
 ```{r}

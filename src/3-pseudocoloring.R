@@ -1,12 +1,17 @@
 three_pseudocoloring <- function(graph, colors) {
   g <- graph
-  Va <- V(g)[type==TRUE]
-  Vb <- V(g)[type==FALSE]
+  l <- (colors[3] - colors[1]) / (colors[2] - colors[1])
+  
+  if (sum(V(g)[type==FALSE]$weight) < sum(V(g)[type==TRUE]$weight)) {
+    Va <- V(g)[type==FALSE]
+    Vb <- V(g)[type==TRUE]
+  } else {
+    Va <- V(g)[type==TRUE]
+    Vb <- V(g)[type==FALSE]
+  }
 
   Va_ <- paste(Va$name, '*', sep='')
   Vb_ <- paste(Vb$name, '*', sep='')
-  
-  l <- (colors[3] - colors[1]) / (colors[2] - colors[1])
   
   D <- make_empty_graph() + vertices(as_ids(Va)) + vertices(as_ids(Vb)) + vertices(Va_) + vertices(Vb_) + vertices(c('s', 't')) #V
   
@@ -30,11 +35,11 @@ three_pseudocoloring <- function(graph, colors) {
   }
   
   for(i in 1:length(E(g))) {
-    w <- 1000000000 # Here should be Inf
+    w <- Inf # Here should be Inf
 
-    v1 <- V(g)[ends(g, E(g)[i])][type==TRUE]$name
+    v1 <- V(g)[ends(g, E(g)[i])][type==Va[1]$type]$name
     v1_ <- paste(v1, '*', sep='')
-    v2 <- V(g)[ends(g, E(g)[i])][type==FALSE]$name
+    v2 <- V(g)[ends(g, E(g)[i])][type==Vb[1]$type]$name
     v2_ <- paste(v2, '*', sep='')
     
     D <- D + edge(v1, v2, weight = w)  # A_12
@@ -42,28 +47,32 @@ three_pseudocoloring <- function(graph, colors) {
   }
   
   stCuts <- st_min_cuts(D, source = "s", target = "t")
+  T <- D - stCuts$partition1s[[1]]
+  S <- delete.vertices(D, V(T)$name)
+  VT = V(T)$name
+  VS = V(S)$name
   
-  # for(i in 1:length(stCuts$cuts)) {
-  #   cuts <- stCuts$cuts[[i]]
-  #   
-  #   if(all(ends(D, cuts)[,1] == 's') || all(ends(D, cuts)[,2] == 't'))  {
-  #     next;
-  #   }
-    
-    T <- D - stCuts$partition1s[[1]]
-    S <- delete.vertices(D, V(T)$name)
-    
-    V1 <-union(intersect(V(S)$name, Va$name), intersect(V(T)$name, Vb$name))
-    V2 <- gsub('[*]', '', union(intersect(V(S)$name, Vb_), intersect(V(T)$name, Va_)))
-    V3 <- intersect(setdiff(V(D)$name, union(V1, V2)), union(Va$name, Vb$name))
-    
-    # print(V1)
-    # print(V2)
-    
-    if (length(V3) > 0) {
-      return (list(V1,V2,V3))
-    }
+  '%!in%' <- function(x,y)!('%in%'(x,y))
+  
+  TVa_ <- intersect(VT, Va_)
+  SVa <- paste(intersect(Va, Vs), '*', sep='')
+  move_to_S <- c(intersect(TVa_, SVa))
+  VT <- VT[VT %!in% move_to_S]
+  VS <- c(VS, move_to_S)
+  
+  SVb_ <- intersect(VS, Vb_)
+  TVb <- paste(intersect(Vb, VT), '*', sep='')
+  move_to_T <- c(intersect(SVb_, TVb))
+  VS <- VS[VS %!in% move_to_T]
+  VT <- c(VT, move_to_T)
+  
+  V1 <-union(intersect(VS, Va$name), intersect(VT, Vb$name))
+  V2 <- gsub('[*]', '', union(intersect(VS, Vb_), intersect(VT, Va_)))
+  V3 <- intersect(setdiff(V(D)$name, union(V1, V2)), union(Va$name, Vb$name))
+  
+  if (length(V3) > 0) {
+    return (list(V1,V2,V3))
+  }
 
-    return(list(V1,V2))
-  # }
+  return(list(V1,V2))
 }

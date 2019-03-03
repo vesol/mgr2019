@@ -10,7 +10,7 @@ four_coloring <- function(graph, colors) {
   V(S1)[name %in% S1a]$color <- colors[1]
   V(S1)[name %in% S1b]$color <- colors[2]
   sum1 <- sum_coloring(S1, colors)
-  plot(S1, layout=layout_as_bipartite, main = paste('S1:', sum1))
+  # plot(S1, layout=layout_as_bipartite, main = paste('S1:', sum1))
   
   if (length(threePseudoColoring) == 2) {
     V3 <- c()
@@ -29,7 +29,7 @@ four_coloring <- function(graph, colors) {
   V(S2)[name %in% S2a]$color <- colors[2]
   V(S2)[name %in% S2b]$color <- colors[3]
   sum2 <- sum_coloring(S2, colors)
-  plot(S2, layout=layout_as_bipartite, main = paste('S2:', sum2))
+  # plot(S2, layout=layout_as_bipartite, main = paste('S2:', sum2))
   
   if (length(V3) == 0) {
     if (sum1 == min(sum1, sum2)) {
@@ -51,7 +51,7 @@ four_coloring <- function(graph, colors) {
   V(S3)[name %in% S3a]$color <- colors[4]
   V(S3)[name %in% S3b]$color <- colors[3]
   sum3 <- sum_coloring(S3, colors)
-  plot(S3, layout=layout_as_bipartite, main = paste('S3:', sum3))
+  # plot(S3, layout=layout_as_bipartite, main = paste('S3:', sum3))
   
   if (sum1 == min(sum1, sum2, sum3)) {
     return(S1)
