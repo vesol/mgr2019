@@ -30,8 +30,7 @@ k <- 4
 c <- c(1,2,3,4)
 
 g <- read.graph("graphs/bipartite.graphml", "graphml")
-g <- delete_vertex_attr(g, "color")
-# 
+
 # n = 8
 # g <- sample_bipartite(floor(n/2), ceiling(n/2), p=0.4)
 # V(g)$weight = sample(c(1,2,6,24), n, replace = TRUE)
@@ -40,36 +39,30 @@ V(g)$name <- letters[1:n]
 
 plot(g, layout=layout_as_bipartite, main='input graph', vertex.size=40, vertex.label.cex=1, vertex.label = paste(V(g)$name, '/', V(g)$weight))
 ```
-# ds
-```{r}
-Va <- c('a', 'b', 'c', 'd')
-Va_ <- c('a*', 'b*', 'c*', 'd*')
-Vb <- c('e', 'f', 'g', 'h')
-Vb_ <- c('e*', 'f*', 'g*', 'h*')
-Vt <- c('e', 'c',' d', 'e*', 'f*', 'b*', 'c*', 'd*', 't')
-Vs <- c('f', 'g', 'h', 'a', 'b', 'g*', 'h*', 'a*', 's')
-
-test1 <- intersect(Vt, Va_)
-test2 <- paste(intersect(Va, Vs), '*', sep='')
-
-to_move <- c(intersect(test1, test2))
-
-'%!in%' <- function(x,y)!('%in%'(x,y))
-
-Vt <- Vt[Vt %!in% to_move ]
-Vs <- c(Vs, to_move)
-Vt
-Vs
-```
 # Test 27/26-algorithm
 ```{r}
 tic("27/26-approximate algorithm")
-S <- four_coloring(g, c)
+result <- four_coloring(g, c)
+S <- result[[1]]
+Ssum <- result[[2]]
+optimal <- result[[3]]
 toc()
 
-Ssum <- sum_coloring(S, c)
+# threePseudoColoring <- three_pseudocoloring(g, colors)
+# V1 <- threePseudoColoring[[1]]
+# a <- sum(V(g)[V1]$weight)
+# b <- sum(V(g)[type==TRUE]$weight)
+# c <- sum(V(g)[type==FALSE]$weight)
+# 
+# a == b
+# a == c
+# print(sum(V(g)[V1]$weight) == sum(V(g)[type==TRUE]$weight))
+# print(sum(V(g)[V1]$weight))
+# print(sum(V(g)[type==FALSE]$weight))
+# print(sum(V(g)[type==TRUE]$weight))
+# Ssum <- sum_coloring(S, c)
 
-plot(S, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main=paste('27/26-approximate - cost: ', Ssum), vertex.label = paste(V(S)$name, '/', V(S)$weight, '/', V(S)$color, sep=''))
+plot(S, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main=paste('27/26-approximate - cost: ', Ssum, ' (optimal:', optimal, ')'), vertex.label = paste(V(S)$name, '/', V(S)$weight, '/', V(S)$color, sep=''))
 ```
 # Brute force
 ```{r}
@@ -79,6 +72,22 @@ toc()
 
 Bsum <- sum_coloring(B, c)
 plot(B, layout=layout_as_bipartite, palette=diverging_pal(length(unique(V(B)$color))), vertex.size=40, vertex.label.cex=1, main=paste('Brute Force - sum:', Bsum), vertex.label = paste(V(B)$name, '/', V(B)$weight, '/', V(B)$color, sep=''))
+```
+# Test 1 - different weight combinations
+```{r}
+tic('Generating graphs for test1')
+weights <- c(1,2,6,24)
+for (i in 1:length(weights)**length(V(g))) {
+# for (i in 1:2) {
+  gtmp <- g
+  
+  for (j in 1:length(V(gtmp))) {
+    V(gtmp)[j]$weight <- 1
+  }
+  
+  write_graph(gtmp, paste0('graphs/test1/', i, '.graphml'), "graphml")
+}
+toc()
 ```
 # Write graph
 ```{r}

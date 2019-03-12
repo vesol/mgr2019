@@ -35,8 +35,10 @@ three_pseudocoloring <- function(graph, colors) {
   }
   
   for(i in 1:length(E(g))) {
-    w <- Inf # Here should be Inf
+    w <- max(V(g)$weight) ** 2  # Here should be Inf, but unfortunetaly Inf break algorithm
 
+    # w <- Inf-100
+    
     v1 <- V(g)[ends(g, E(g)[i])][type==Va[1]$type]$name
     v1_ <- paste(v1, '*', sep='')
     v2 <- V(g)[ends(g, E(g)[i])][type==Vb[1]$type]$name
@@ -69,7 +71,7 @@ three_pseudocoloring <- function(graph, colors) {
   V1 <-union(intersect(VS, Va$name), intersect(VT, Vb$name))
   V2 <- gsub('[*]', '', union(intersect(VS, Vb_), intersect(VT, Va_)))
   V3 <- intersect(setdiff(V(D)$name, union(V1, V2)), union(Va$name, Vb$name))
-  
+
   if (length(V3) > 0) {
     return (list(V1,V2,V3))
   }
