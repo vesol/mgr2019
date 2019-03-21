@@ -59,13 +59,11 @@ Następnie kolorujemy $V1$ kolorem $C1$, $V2$ kolorem $C2$, a pozostałe wierzch
 
 Najlepsze z pokolorowań $S1$, $S2$ oraz $S3$ (kryterium jest minimum sumy kolorowania) jest naszym rozwiązaniem. Co więcej, jest rozwiązaniem nie gorszym niż 27/26 rozwiązania optymalnego jak zostało dowiedzione w \cite{kubale-pikies19}.
 
-\subsubsection*{Weryfikacja optymalności rozwiązania}
+\subsubsection*{Wstępna selekcja grafów łatwych}
 
-Powyższy algorytm gwarantuje nam, że otrzymane rozwiązanie nie będzie gorsze niż 27/26 rozwiązania optymalnego. Co prawda nie znamy wartości optymalnego rozwiązania, ale możemy dość łatwo sprawdzić czy otrzymane rozwiązanie jest optymmalne czy nie.
+Grafy banalne do wyliczenia optymalnego wyniku możemy łatwo zidentyfikować już na początku algorytmu. W takich przypadkach optymalne rozwiązanie uzyskujemy już w pierwszym kroku algoytmu imamy pewność że kolejne kroki nie polepszą wyniku, więc algorytm można przerwać wcześniej.
 
-By zweryfikować czy otrzymane rozwiązanie jest optymalne, należy znaleźć najcięższy zbiór niezależny w grafie i porównać go z podzbiorem grafu wyznaczonym poprzez pokolorowanie pierwszym kolorem. Jeśli sumy wag wierzchołków z obu podgrafów są sobie równe, oznacza to, że otrzymane rozwiązanie jest optymalne.
-
-Posiadając tą wiedzę, możemy zoptymalizować algorytm przerywając jego działanie i zwracając optymalny wynik, od razu po pierwszym kroku (optymalne pokolorowanie grafu dwoma kolorami) w przypadku, gdy zostanie spełniony ten warunek.
+By to osiągnąć, po obliczeniu optymalnego kolorowania dwoma kolorami należy obliczyć najcięższy zbiór niezależny. Jeśli suma wag wierzchołków wyznaczonych przez ten zbiór, oraz suma wag wyznaczonych przez któryś z kolorów z dwukolorowania są sobie równe, oznacza to że osiągneliśmy wynik optymalny.
 
 \subsection{Algorytm siłowy}
 
@@ -77,7 +75,11 @@ Sprawdzenie, czy kolorowanie jest poprawne czy nie jest banalne i polega na odwi
 
 Algorytm możemy więc podzielić na 3 części - 1) wygenerowanie wszystkich możliwych kombinacji, 2) sprawdzenie każdej z nich, 3) połączenie wyników.
 
-Mimo, iż algorytm jest stosunkowo łatwy do zrównoleglenia, ponieważ pierwsza i ostatnia faza są proste obliczeniowo, natomiast w przypadku fazy środkowej każdą z kombinacji może liczyć niezależnie osobny wątek, to rozmiar danych wejściowych rośnie wykładniczo i algorytm jest niewydajny. 
+\subsubsection*{Optymalizacje}
+
+Algorytm jest stosunkowo łatwy do zrównoleglenia, ponieważ pierwsza i ostatnia faza są proste obliczeniowo, natomiast w przypadku fazy środkowej (najbardziej wymagającej obliczeniowo) każdą z kombinacji może liczyć niezależnie osobny wątek.
+
+
 
 \section{Porównanie algorytmów}
 

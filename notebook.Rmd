@@ -26,12 +26,8 @@ source("src/is_optimal.R")
 ```
 # Reference input
 ```{r}
-k <- 4
 c <- c(1,2,3,4)
-
 g <- read.graph("graphs/bipartite.graphml", "graphml")
-
-V(g)$name <- letters[1:length(V(g))]
 
 # setEPS()
 # postscript("graphs/reference_graph.eps", fonts = c("serif"))
@@ -40,17 +36,18 @@ plot(g, layout=layout_as_bipartite, main='input graph', vertex.size=40, vertex.l
 ```
 # Test 27/26-algorithm
 ```{r}
+c <- c(1,2,3,4)
+g <- read.graph("graphs/bipartite.graphml", "graphml")
+
 tic("27/26-approximate algorithm")
 result <- four_coloring(g, c)
-S <- result[[1]]
-Ssum <- result[[2]]
-optimal <- is_optimal(g, c)
 toc()
-
-plot(S, layout=layout_as_bipartite, palette=diverging_pal(length(unique(V(S)$color))), vertex.size=40, vertex.label.cex=1, main=paste('27/26-approximate - cost: ', Ssum, ' (optimal:', optimal, ')'), vertex.label = paste(V(S)$name, '/', V(S)$weight, '/', V(S)$color, sep=''))
 ```
 # Brute force
 ```{r}
+c <- c(1,2,3,4)
+g <- read.graph("graphs/bipartite.graphml", "graphml")
+
 tic('Brute force alorithm')
 B <- brute_force(g, c)
 Bsum <- sum_coloring(B, c)
@@ -58,10 +55,42 @@ toc()
 
 plot(B, layout=layout_as_bipartite, palette=diverging_pal(length(unique(V(B)$color))), vertex.size=40, vertex.label.cex=1, main=paste('Brute Force - sum:', Bsum), vertex.label = paste(V(B)$name, '/', V(B)$weight, '/', V(B)$color, sep=''))
 ```
+# Test 0
+```{r}
+c <- c(1,2,3,4)
+n = 11
+g <- sample_bipartite(floor(n/2), ceiling(n/2), p=0.6)
+V(g)$weight = sample(c(1,2,6,24), n, replace = TRUE)
+V(g)$name <- letters[1:n]
+
+# g <- read.graph("graphs/bipartite.graphml", "graphml")
+
+tic("27/26-approximate")
+result <- four_coloring(g, c)
+toc()
+
+S <- result[[1]]
+Ssum <- result[[2]]
+result_print(S, Ssum)
+
+g$sumS <- Ssum
+
+tic("brute_force")
+B <- brute_force2(g, c, Ssum)
+Bsum <- sum_coloring(B, c)
+toc()
+
+result_print(B, Bsum)
+
+g$sumB <- Bsum
+g$optimal <- Bsum == Ssum
+write_graph(g, "graphs/test1/9_04.graphml", "graphml")
+
+```
 # graph generator
 ```{r}
-n = 11
-g <- sample_bipartite(floor(n/2), ceiling(n/2), p=0.4)
+n = 9
+g <- sample_bipartite(floor(n/2), ceiling(n/2), p=0.8)
 V(g)$weight = sample(c(1,2,6,24), n, replace = TRUE)
 V(g)$name <- letters[1:n]
 ```
