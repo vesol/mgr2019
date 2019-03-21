@@ -57,7 +57,7 @@ three_pseudocoloring <- function(graph, colors) {
   '%!in%' <- function(x,y)!('%in%'(x,y))
   
   TVa_ <- intersect(VT, Va_)
-  SVa <- paste(intersect(Va, Vs), '*', sep='')
+  SVa <- paste(intersect(Va, VS), '*', sep='')
   move_to_S <- c(intersect(TVa_, SVa))
   VT <- VT[VT %!in% move_to_S]
   VS <- c(VS, move_to_S)

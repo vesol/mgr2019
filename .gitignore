@@ -1,3 +1,6 @@
 diploma.*
 !diploma.tex
 .Rproj.user
+.RData
+.Rhistory
+.idea

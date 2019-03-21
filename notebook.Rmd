@@ -22,22 +22,21 @@ source("src/is_colored_properly.R")
 source("src/sum_coloring.R")
 source("src/27_26-approximate-coloring.R")
 source("src/brute_force.R")
+source("src/is_optimal.R")
 ```
 # Reference input
 ```{r}
 k <- 4
-# c <- sort(sample(1:10, k, replace = FALSE))
 c <- c(1,2,3,4)
 
 g <- read.graph("graphs/bipartite.graphml", "graphml")
 
-# n = 8
-# g <- sample_bipartite(floor(n/2), ceiling(n/2), p=0.4)
-# V(g)$weight = sample(c(1,2,6,24), n, replace = TRUE)
-# 
-V(g)$name <- letters[1:n]
+V(g)$name <- letters[1:length(V(g))]
 
+# setEPS()
+# postscript("graphs/reference_graph.eps", fonts = c("serif"))
 plot(g, layout=layout_as_bipartite, main='input graph', vertex.size=40, vertex.label.cex=1, vertex.label = paste(V(g)$name, '/', V(g)$weight))
+# dev.off()
 ```
 # Test 27/26-algorithm
 ```{r}
@@ -45,34 +44,28 @@ tic("27/26-approximate algorithm")
 result <- four_coloring(g, c)
 S <- result[[1]]
 Ssum <- result[[2]]
-optimal <- result[[3]]
+optimal <- is_optimal(g, c)
 toc()
 
-# threePseudoColoring <- three_pseudocoloring(g, colors)
-# V1 <- threePseudoColoring[[1]]
-# a <- sum(V(g)[V1]$weight)
-# b <- sum(V(g)[type==TRUE]$weight)
-# c <- sum(V(g)[type==FALSE]$weight)
-# 
-# a == b
-# a == c
-# print(sum(V(g)[V1]$weight) == sum(V(g)[type==TRUE]$weight))
-# print(sum(V(g)[V1]$weight))
-# print(sum(V(g)[type==FALSE]$weight))
-# print(sum(V(g)[type==TRUE]$weight))
-# Ssum <- sum_coloring(S, c)
-
-plot(S, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main=paste('27/26-approximate - cost: ', Ssum, ' (optimal:', optimal, ')'), vertex.label = paste(V(S)$name, '/', V(S)$weight, '/', V(S)$color, sep=''))
+plot(S, layout=layout_as_bipartite, palette=diverging_pal(length(unique(V(S)$color))), vertex.size=40, vertex.label.cex=1, main=paste('27/26-approximate - cost: ', Ssum, ' (optimal:', optimal, ')'), vertex.label = paste(V(S)$name, '/', V(S)$weight, '/', V(S)$color, sep=''))
 ```
 # Brute force
 ```{r}
 tic('Brute force alorithm')
 B <- brute_force(g, c)
+Bsum <- sum_coloring(B, c)
 toc()
 
-Bsum <- sum_coloring(B, c)
 plot(B, layout=layout_as_bipartite, palette=diverging_pal(length(unique(V(B)$color))), vertex.size=40, vertex.label.cex=1, main=paste('Brute Force - sum:', Bsum), vertex.label = paste(V(B)$name, '/', V(B)$weight, '/', V(B)$color, sep=''))
 ```
+# graph generator
+```{r}
+n = 11
+g <- sample_bipartite(floor(n/2), ceiling(n/2), p=0.4)
+V(g)$weight = sample(c(1,2,6,24), n, replace = TRUE)
+V(g)$name <- letters[1:n]
+```
+
 # Test 1 - different weight combinations
 ```{r}
 tic('Generating graphs for test1')

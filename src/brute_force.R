@@ -9,20 +9,20 @@ brute_force <- function(graph, colors) {
       return(c[index])
     })
     
-    graph <- g
-    V(graph)$color <- coloring
+    g <- graph
+    V(g)$color <- coloring
     
-    if(is_colored_properly(graph)) {
-      sum <- color_sum(graph, c)
+    if(is_colored_properly(g)) {
+      sum <- sum_coloring(g, c)
       return(list(sum, coloring))
     }
     
     return(list(0, coloring))
   })
   
-  g2 <- g
+  g2 <- graph
   V(g2)$color <- rep(4, n)
-  g2sum <- color_sum(g2, c)
+  g2sum <- sum_coloring(g2, c)
   
   for(i in 1:k**n) {
     tmpSum <- colorings[[i]][[1]]
