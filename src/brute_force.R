@@ -1,4 +1,4 @@
-brute_force <- function(graph, colors) {
+brute_force <- function(graph, colors, initialSum = 0) {
   n <- length(V(graph))
   k < length(colors)
   
@@ -12,8 +12,12 @@ brute_force <- function(graph, colors) {
     g <- graph
     V(g)$color <- coloring
     
+    sum <- sum_coloring(g, c)
+    if (sum > initialSum && initialSum != 0) {
+      return(list(0, coloring))
+    }
+    
     if(is_colored_properly(g)) {
-      sum <- sum_coloring(g, c)
       return(list(sum, coloring))
     }
     

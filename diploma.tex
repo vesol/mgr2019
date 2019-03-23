@@ -26,6 +26,8 @@
 
 Szeregowanie zadań kompatybilnych na maszynach jednorodnych.
 
+\subsection{Przykłady zastosowań}
+
 \section{Kolorowanie grafów ważonych}
 
 Aby przejść do rozwiązywania problemu kosztowego kolorowania grafów ważonych musimy zacząć od kilku definicji formalnych. 
@@ -46,7 +48,6 @@ Minimalne k-pseudokolorowanie polega na takim dobraniu kolorów, by spełnione b
 
 Algorytm polega na zbudowaniu grafu skierowanego na podstawie grafu wejściowego i wyliczeniu przecięcia S-T. W ten sposób utworzone zbiory wierzchołków, po drobnych przekształceniach, definiują 3 kolory jakimi należy pokolorować graf by otrzymać 3-pseudokolorowanie. Algorytm został znakomicie opisany w \cite{kubale-pikies19}.
 
-
 \subsubsection*{27/26-przybliżony}
 
 Algorytm 27/26-przybliżony działa w czasie $O(nm)$, ale nie gwarantuje nam znalezienia optymalnego rozwiązania. Mamy jednak pewność, że znalezione rozwiązanie nie będzie gorsze niż 27/26 rozwiązania optymalnego. 
@@ -65,25 +66,41 @@ Grafy banalne do wyliczenia optymalnego wyniku możemy łatwo zidentyfikować ju
 
 By to osiągnąć, po obliczeniu optymalnego kolorowania dwoma kolorami należy obliczyć najcięższy zbiór niezależny. Jeśli suma wag wierzchołków wyznaczonych przez ten zbiór, oraz suma wag wyznaczonych przez któryś z kolorów z dwukolorowania są sobie równe, oznacza to że osiągneliśmy wynik optymalny.
 
-\subsection{Algorytm siłowy}
+\subsection{Algorytm optymalny}
 
-Algorytm siłowy "brute-force" polega na wygenerowaniu wszystkich możliwych sekwencji kolorów dla danego grau.. Następnie z wszystkich prawidłowych kolorowań wybieramy to, które ma najmniejszą sumę kolorowania. Ilość wszystkich kombinacji wynosi $n^k$, gdzie $n$ to ilość wierzchołków grafu, a $k$ to ilość różnych kolorów - w naszym przypadku 4.
+\paragraph{} Algorytm optymalny opiera się na metodzie siłowej, gdzie generujemy wszystkie możliwe sekwencje kolorów dla danego grafu. Ilość wszystkich kombinacji wynosi $n^k$, gdzie $n$ to ilość wierzchołków grafu, a $k$ to ilość różnych kolorów - w naszym przypadku 4. Sposób przypisania kolorów do wierzchołków w danej sekwencji definiuje wzór $c = (x / k^{i-1}) \bmod k$, gdzie $c$ to index koloru, $i$ to index wierzchołka w grafie, $x$ to numer danej sekwencji a $k$ ilość dostępnych kolorów w palecie. 
 
-Sposób przypisania kolorów do wierzchołków w danej sekwencji definiuje wzór $c = (x \div k^{i-1}) \bmod k$, gdzie $c$ to index koloru, $i$ to index wierzchołka w grafie, $x$ to numer danej sekwencji a $k$ ilość dostępnych kolorów w palecie. 
+Dla każdej wygenerowanej kombinacji musimy wykonać dwa obliczenia. Należy zweryfikować, czy dana kombinacja jest poprawnym kolorowaniem, oraz obliczyć sumę kolorowania, by można było wybrać najlepszy wynik.
 
-Sprawdzenie, czy kolorowanie jest poprawne czy nie jest banalne i polega na odwiedzeniu wszystkich wierzchołków w dowolnej kolejności oraz sprawdzeniu, czy dany wierzchołek nie ma sąsiada w tym samym kolorze co on. 
+Sprawdzenie, czy kolorowanie jest poprawne czy nie jest banalne i polega na odwiedzeniu wszystkich wierzchołków w dowolnej kolejności oraz sprawdzeniu, czy dany wierzchołek nie ma sąsiada w tym samym kolorze co on. W celu optymalizacji, można sprawdzać wierzchołki w kolejności malejącej biorąc pod uwagę stopień wierzchołka.
 
-Algorytm możemy więc podzielić na 3 części - 1) wygenerowanie wszystkich możliwych kombinacji, 2) sprawdzenie każdej z nich, 3) połączenie wyników.
+\subsubsection*{Zrównoleglenie}
 
-\subsubsection*{Optymalizacje}
+\paragraph{} Algorytm możemy podzielić na sekwencje trzech kroków, W pierwszym kroku generujemy wszystkie możliwe kombinacje kolorów, następnie wykonujemy obliczenia dla każdej z kombinacji a na końcu musimy wybrać najlepszą wynik (kombinacje, dla której suma kolorowania jest najmniejsza).
 
-Algorytm jest stosunkowo łatwy do zrównoleglenia, ponieważ pierwsza i ostatnia faza są proste obliczeniowo, natomiast w przypadku fazy środkowej (najbardziej wymagającej obliczeniowo) każdą z kombinacji może liczyć niezależnie osobny wątek.
+Algorytm jest stosunkowo łatwy do zrównoleglenia, ponieważ pierwsza i ostatnia faza są proste obliczeniowo, natomiast w przypadku fazy środkowej (najbardziej wymagającej obliczeniowo) obliczenia możemy wykonywać równolegle, każdą z kombinacji liczyć niezależnie.
 
+\subsubsection*{Odrzucanie rozwiązań które dają sumę większą zadanej wartości}
 
+\paragraph{} Na każdej wygenerowanej kombincaji kolorów musimy wykonać dwa obliczenia: policzenie sumy kolorowania oraz zweryfikowanie, czy otrzymana kombinacja kolorów jest kolorowaniem poprawnym. Możemy zredukować ilość obliczeń, najpierw obliczając sumę kolorowania i odrzucając sumy, które są większe równe od jakiejś zadanej wartości. W ten sposób nie musimy sprawdzać poprawności kolorownia wszystkich kombinacji, lecz tylko tych które dają sume kolorowania mniejszą od zadanej.
 
-\section{Porównanie algorytmów}
+Wartością, do której przyrównujemy wszystkie obiczane sumy kolorowania może być np. wynik algorytmu przybliżonego, który również został opisany w tej pracy.
 
-\section{Analiza wyników}
+\subsubsection*{Odrzucenie kolorów o znacznie większych wagach}
+
+\paragraph{} W szczególnyh przypadkach, gdy mamy do czynienia z kolorami, których wagi różnią się między sobą znacznie, nie ma sensu generować wszystkich możliwych kombinacji pokolorowań. Mamy do czynienia z grafem dwudzielny, więc minimalna ilość kolorów wynosi 2. Jednakże, jeśli waga koloru trzeciego lub kolorów trzeciego i czwartego jest znacząco wyższa od wagi koloru drugiego jest duża szansa, że można te kolory pominąć w generowaniu możliwych kombinacji, i zamiast $k^n$ kombinacji do przeliczenia mamy jedynie $(k-1)^n$ lub $(k-2)^n$
+
+//TODO: wciąż nie wiem jak zdecydować, czy ten kolor jest zbyt duży, czy jeszcze nie. Należałoby 
+
+\section{Generowanie grafów - Model Erdos-Renyi}
+
+\paragraph{} Model generowania grafów Erdos-Renyi to w rzeczywistości dwa bardzo do siebie podobne modele. 
+
+W pierwszym wariancie podajemy ilość wierzchołków $n$ oraz ilość krawędzi które mają znajdować się w grafie $M$. Rozmieszczenie krawędzie między wierzchołkami jest wybierane z prawdopodobieństwem liniowym spośród wszystkich możliwych grafów o takiej ilości krawędzi.
+
+Drugi wariant polega na konstruowaniu grafu poprzez losowe łączenie wierzchołków. Każda krawędź między wierzchołkami jest generowana z prawdopodobieństwem $p$. Zależność między tym wariantem a poprzednim przejawia się tym, że każda krawędź z poprzedniego modelu jest generowana z prawdopodobieństwem $p^M(1-p)^{{n \choose 2}-M}$.
+
+Musimy dostosować model tak, by generował tylko grafy dwudzielne. W tym celu zamiast jednego parametru $n$ musimy podać ilość wierzchołków dla obu bipartycji, a krawędzie między losujemy tylko między wierzchołkami różnych bipartycji.
 
 \begin{thebibliography}{9}
 
