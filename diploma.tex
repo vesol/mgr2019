@@ -28,7 +28,12 @@ Szeregowanie zadań kompatybilnych na maszynach jednorodnych.
 
 \subsection{Przykłady zastosowań}
 
-\section{Kolorowanie grafów ważonych}
+\paragraph{} Wyobraźmy sobie, że prowadzimy firmę transportową zajmującą się przewozem zwierząt. Danego dnia mamy do przewiezienia $n$ zwierząt, z czego każde jest mniej lub bardziej problematyczne, a co za tym idzie koszt jego przewiezienia jest droższy. Dodatkowo nie wszystkie zwierzęta można przewozić ze sobą, ponieważ, na przykład, kota nie można przewozić razem z psem, myszy ze słoniem, a węża z chomikiem. 
+Wszyscy nasi pracownicy otrzymują takie samo wynagrodzenie, płacone od godziny, ale różnią się między sobą umiejętnościami i sprawnością, więc wykonują swoją pracę w różnym tempie. W jaki sposób możemy zminimalizować nasz koszt, przydzielając najbardziej sprawnych pracowników do zwierząt, których transport będzie kosztował najwięcej? W tym przykładzie wierzchołkami są zwierzęta z wagami odzwierciedlającymi koszty transportu. Krawędzie w grafie odpowiadajć zwierzętom, które nie mogą być w jednym transporcie. Kolorowaniem takiego grafu będzie przyporządkowanie pracowników.
+
+Innym przykładem będzie organizacja warsztatów na dużej, międzynajodowej konferencji. W ramach warsztatów mamy za zadanie zorganizować $n$ szkoleń, na każde zapisało się (i opłaciło udział) już wielu uczestników. Godziny szkoleń mogą się na siebie nakładać. Im więcej osób zapisało się na warsztat, tym koszt poprowadzenia takiego warszatu jest droższy, ponieważ trzeba zapewnić odpowiednie akcesoria do wykonania ćwiczeń oraz zapewnić odpowiednio dużą salę, co wiąże się z odpowiednio wysokim kosztem. Mamy do dyspozycji kilka sal, każda o innym koszcie (każda jest w stanie pomieścić uczestników największego szkolenia). Jak rozmieścić szkolenia w salach, tak by zminimalizować koszt?
+
+\section{Algorytmy kolorowania grafów ważonych}
 
 Aby przejść do rozwiązywania problemu kosztowego kolorowania grafów ważonych musimy zacząć od kilku definicji formalnych. 
 
@@ -101,6 +106,16 @@ W pierwszym wariancie podajemy ilość wierzchołków $n$ oraz ilość krawędzi
 Drugi wariant polega na konstruowaniu grafu poprzez losowe łączenie wierzchołków. Każda krawędź między wierzchołkami jest generowana z prawdopodobieństwem $p$. Zależność między tym wariantem a poprzednim przejawia się tym, że każda krawędź z poprzedniego modelu jest generowana z prawdopodobieństwem $p^M(1-p)^{{n \choose 2}-M}$.
 
 Musimy dostosować model tak, by generował tylko grafy dwudzielne. W tym celu zamiast jednego parametru $n$ musimy podać ilość wierzchołków dla obu bipartycji, a krawędzie między losujemy tylko między wierzchołkami różnych bipartycji.
+
+\section{Testy algorytmów}
+
+\subsubsection{Stałe wagi wierzchołków}
+
+W teście tym sprawdzimy, jak dobrze algorytm przybliżony zachowuje się dla grafów o tej samej liczbie wierzchołków i wagach, ale o różnym ułożeniu krawędzi. w tym celu będziemy losować po $200$ grafów o gęstości $0.4, 0.5, 0.6, 0.7, 0.8 i 0.9$, za każdym razem sprawdzając, jak skuteczny okazał się algorytm 27/26 przybliżony.
+
+\subsection*{Wzrost liczby wierzchołków}
+
+W tym teście będziemy sprawdzać jak zmienia się skuteczność algorytmu przybliżonego wraz z wzrostem ilości wierzchołków. W tym celu będziemy losować po $200$ grafów dla $n = 5,6,7,8,9,10,11,12$ wierzchołków. Wagi wierzchołków będziemy losować ze stałego zbioru $(24, 9, 2, 1)$
 
 \begin{thebibliography}{9}
 

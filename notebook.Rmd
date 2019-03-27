@@ -27,7 +27,8 @@ source("src/is_optimal.R")
 # Reference input
 ```{r}
 c <- c(1,2,3,4)
-g <- read.graph("graphs/bipartite.graphml", "graphml")
+# g <- read.graph("graphs/bipartite.graphml", "graphml")
+g <- read.graph("case1/1.graphml", "graphml")
 
 # setEPS()
 # postscript("graphs/reference_graph.eps", fonts = c("serif"))
@@ -36,8 +37,8 @@ plot(g, layout=layout_as_bipartite, main='input graph', vertex.size=40, vertex.l
 ```
 # Test 27/26-algorithm
 ```{r}
-c <- c(1,2,3,4)
-g <- read.graph("graphs/bipartite.graphml", "graphml")
+# c <- c(1,2,3,4)
+# g <- read.graph("case1/1.graphml", "graphml")
 
 tic("27/26-approximate algorithm")
 result <- four_coloring(g, c)
@@ -48,29 +49,48 @@ Ssum <- result[[2]]
 
 result_print(S, Ssum)
 ```
-# Brute force
+# Brute force test
 ```{r}
-c <- c(1,2,3,4)
-g <- read.graph("graphs/bipartite.graphml", "graphml")
+# c <- c(1,2,3,4)
+# g <- read.graph("test1/1/3.graphml", "graphml")
 
-tic('Brute force alorithm')
+tic('Brute force')
 B <- brute_force(g, c, Ssum)
 toc()
 
-Bsum <- sum_coloring(B, c)
-if (Bsum < Ssum) {
-  result_print(B, Bsum)
-} else {
-  result_print(S, Ssum)
-}
+result_print(B[[1]], B[[2]])
 ```
-# Bipartite
+# Test 1
 ```{r}
-for (i in 1:3) {
-  graph <- sample_bipartite(4, 4, p=.6)
-  plot(graph, layout = layout_as_bipartite)
-}
+tic('test 1')
+n <- 8
+density <- c(0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+density <- c(0.4)
+for (i in 1:length(density)) {
+  path <- paste0('test1/', i)
+  if (!dir.exists(path))
+    dir.create(path)
+  
+  for(j in 1:10) {
+    graph <- sample_bipartite(n/2, n/2, p=density[i])
+    V(graph)$weight <- sample(c(1,2,6,24), n, replace = TRUE)
+    V(graph)$name <- letters[1:n]
+    
+    approximated <- four_coloring(graph, c)
+    bruteForced <- brute_force(graph, c, approximated[[2]])
 
+    V(graph)$color = V(approximated[[1]])$color
+    V(graph)$color2 = V(bruteForced[[1]])$color
+    graph$approximated = approximated[[2]]
+    graph$optimal = sum_coloring(bruteForced[[1]], c)
+    
+    print(graph$approximated)
+    print(graph$optimal)
+    
+    write_graph(graph, paste0('test1/', i ,'/', j, '.graphml'), "graphml")
+  }
+}
+toc()
 ```
 # Test 0
 ```{r}

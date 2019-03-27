@@ -72,9 +72,5 @@ three_pseudocoloring <- function(graph, colors) {
   V2 <- gsub('[*]', '', union(intersect(VS, Vb_), intersect(VT, Va_)))
   V3 <- intersect(setdiff(V(D)$name, union(V1, V2)), union(Va$name, Vb$name))
 
-  if (length(V3) > 0) {
-    return (list(V1,V2,V3))
-  }
-
-  return(list(V1,V2))
+  return (list(V1,V2,V3))
 }

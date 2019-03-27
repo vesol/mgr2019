@@ -8,7 +8,9 @@ four_coloring <- function(graph, colors) {
   V(S1)[name %in% S1b]$color <- colors[2]
   sum1 <- sum_coloring(S1, colors)
   
+  result_print(S1, sum1)
   threePseudoColoring <- three_pseudocoloring(graph, colors)
+  print(threePseudoColoring)
   V1 <- threePseudoColoring[[1]]
   if (length(threePseudoColoring) == 2) {
     V3 <- c()
@@ -19,6 +21,7 @@ four_coloring <- function(graph, colors) {
   V2 <- threePseudoColoring[[2]]
   S2 <- graph
   S2small <- induced_subgraph(S2, c(V2, V3))
+  print(V(S2small))
   S2v <- two_coloring(S2small)
   S2a <- S2v[[1]]
   S2b <- S2v[[2]]
@@ -27,12 +30,13 @@ four_coloring <- function(graph, colors) {
   V(S2)[name %in% S2a]$color <- colors[2]
   V(S2)[name %in% S2b]$color <- colors[3]
   sum2 <- sum_coloring(S2, colors)
+  result_print(S2, sum2)
   
   if (length(V3) == 0) {
     if (sum1 == min(sum1, sum2)) {
       return(list(S1, sum1))
     }
-    
+
     return(list(S2, sum2))
   }
   
@@ -48,6 +52,7 @@ four_coloring <- function(graph, colors) {
   V(S3)[name %in% S3a]$color <- colors[4]
   V(S3)[name %in% S3b]$color <- colors[3]
   sum3 <- sum_coloring(S3, colors)
+  result_print(S3, sum3)
   
   if (sum1 == min(sum1, sum2, sum3)) {
     return(list(S1, sum1))
@@ -61,5 +66,5 @@ four_coloring <- function(graph, colors) {
 }
 
 result_print <- function(graph, sum) {
-  plot(graph, layout=layout_as_bipartite, palette=diverging_pal(length(unique(V(graph)$color))), vertex.size=40, vertex.label.cex=1, main=paste('cost: ', sum), vertex.label = paste(V(graph)$name, '/', V(graph)$weight, '/', V(graph)$color, sep=''))
+  plot(graph, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main=paste('cost: ', sum), vertex.label = paste(V(graph)$name, '/', V(graph)$weight, '/', V(graph)$color, sep=''))
 }
