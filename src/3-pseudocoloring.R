@@ -37,7 +37,7 @@ three_pseudocoloring <- function(graph, colors) {
   for(i in 1:length(E(g))) {
     w <- max(V(g)$weight) ** 2  # Here should be Inf, but unfortunetaly Inf break algorithm
 
-    # w <- Inf-100
+    # w <- Inf
     
     v1 <- V(g)[ends(g, E(g)[i])][type==Va[1]$type]$name
     v1_ <- paste(v1, '*', sep='')
@@ -53,6 +53,9 @@ three_pseudocoloring <- function(graph, colors) {
   S <- delete.vertices(D, V(T)$name)
   VT = V(T)$name
   VS = V(S)$name
+  
+  print(VT)
+  print(VS)
   
   '%!in%' <- function(x,y)!('%in%'(x,y))
   

@@ -28,18 +28,33 @@ source("src/is_optimal.R")
 ```{r}
 c <- c(1,2,3,4)
 # g <- read.graph("graphs/bipartite.graphml", "graphml")
-g <- read.graph("case1/1.graphml", "graphml")
+g <- read.graph("test1/1/3.graphml", "graphml")
+V(g)$color <- 1
 
 # setEPS()
 # postscript("graphs/reference_graph.eps", fonts = c("serif"))
 plot(g, layout=layout_as_bipartite, main='input graph', vertex.size=40, vertex.label.cex=1, vertex.label = paste(V(g)$name, '/', V(g)$weight))
 # dev.off()
 ```
+# 3-pseudocoloring
+```{r}
+tic("3-pseudocoloring")
+threePseudocoloring <- three_pseudocoloring(g, c)
+toc()
+
+threePseudocoloring
+V(g)[threePseudocoloring[[1]]]$color <- c[1]
+V(g)[threePseudocoloring[[2]]]$color <- c[2]
+
+if (length(threePseudocoloring) == 3) {
+  V(g)[threePseudocoloring[[3]]]$color <- c[3]
+}
+
+sum <- sum_coloring(g, c)
+result_print(g, sum)
+```
 # Test 27/26-algorithm
 ```{r}
-# c <- c(1,2,3,4)
-# g <- read.graph("case1/1.graphml", "graphml")
-
 tic("27/26-approximate algorithm")
 result <- four_coloring(g, c)
 toc()
@@ -51,9 +66,6 @@ result_print(S, Ssum)
 ```
 # Brute force test
 ```{r}
-# c <- c(1,2,3,4)
-# g <- read.graph("test1/1/3.graphml", "graphml")
-
 tic('Brute force')
 B <- brute_force(g, c, Ssum)
 toc()
