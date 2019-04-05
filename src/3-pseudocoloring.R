@@ -1,23 +1,19 @@
-three_pseudocoloring <- function(graph, colors) {
+three_pseudocoloring <- function(graph, colors, debug = FALSE) {
   g <- graph
   l <- (colors[3] - colors[1]) / (colors[2] - colors[1])
   
-  if (sum(V(g)[type==FALSE]$weight) < sum(V(g)[type==TRUE]$weight)) {
-    Va <- V(g)[type==FALSE]
-    Vb <- V(g)[type==TRUE]
-  } else {
-    Va <- V(g)[type==TRUE]
-    Vb <- V(g)[type==FALSE]
-  }
+  twoColoring <- two_coloring(g)
+  Va <- V(g)[name %in% twoColoring[[2]]]
+  Vb <- V(g)[name %in% twoColoring[[1]]]
 
-  Va_ <- paste(Va$name, '*', sep='')
-  Vb_ <- paste(Vb$name, '*', sep='')
+  Va_ <- paste0(Va$name, '*')
+  Vb_ <- paste0(Vb$name, '*')
   
   D <- make_empty_graph() + vertices(as_ids(Va)) + vertices(as_ids(Vb)) + vertices(Va_) + vertices(Vb_) + vertices(c('s', 't')) #V
   
   for(i in 1:length(Va)) {
     name <- Va[i]$name
-    name_ <- paste(name, '*', sep = '')
+    name_ <- paste0(name, '*')
     w <- Va[i]$weight
     
     D <- D + edge('s', name, weight = w)       # A_s1
@@ -26,7 +22,7 @@ three_pseudocoloring <- function(graph, colors) {
   
   for(i in 1:length(Vb)) {
     name <- Vb[i]$name
-    name_ <- paste(name, '*', sep = '')
+    name_ <- paste0(name, '*')
     
     w <- Vb[i]$weight
   
@@ -40,15 +36,26 @@ three_pseudocoloring <- function(graph, colors) {
     # w <- Inf
     
     v1 <- V(g)[ends(g, E(g)[i])][type==Va[1]$type]$name
-    v1_ <- paste(v1, '*', sep='')
+    v1_ <- paste0(v1, '*')
     v2 <- V(g)[ends(g, E(g)[i])][type==Vb[1]$type]$name
-    v2_ <- paste(v2, '*', sep='')
+    v2_ <- paste0(v2, '*')
     
     D <- D + edge(v1, v2, weight = w)  # A_12
     D <- D + edge(v2_, v1_, weight = w) # A_21
   }
   
   stCuts <- st_min_cuts(D, source = "s", target = "t")
+  
+  if (length(stCuts$partition1s) == 0) {
+    if (debug) {
+      V(g)[name %in% Va]$color <- 1
+      V(g)[name %in% Vb]$color <- 2
+      plot(g, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main='3-pseudocoloring (no s-t cut)', vertex.label = paste0(V(g)$name, '/', V(g)$weight, '/', V(g)$color))
+    }
+    
+    return(list(Va$name, Vb$name, c()))
+  }
+  
   T <- D - stCuts$partition1s[[1]]
   S <- delete.vertices(D, V(T)$name)
   VT = V(T)$name
@@ -72,5 +79,12 @@ three_pseudocoloring <- function(graph, colors) {
   V2 <- gsub('[*]', '', union(intersect(VS, Vb_), intersect(VT, Va_)))
   V3 <- intersect(setdiff(V(D)$name, union(V1, V2)), union(Va$name, Vb$name))
 
+  if (debug) {
+    V(g)[name %in% V1]$color <- 1
+    V(g)[name %in% V2]$color <- 2
+    V(g)[name %in% V3]$color <- 3
+    plot(g, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main='3-pseudocoloring', vertex.label = paste0(V(g)$name, '/', V(g)$weight, '/', V(g)$color))
+  }
+  
   return (list(V1,V2,V3))
 }

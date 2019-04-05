@@ -1,10 +1,10 @@
 ---
 title: "Cost coloring of bipartite graphs"
 output:
-  pdf_document:
-    toc: yes
   html_notebook:
     theme: united
+    toc: yes
+  pdf_document:
     toc: yes
   html_document:
     toc: yes
@@ -28,7 +28,7 @@ source("src/is_optimal.R")
 ```{r}
 c <- c(1,2,3,4)
 # g <- read.graph("graphs/bipartite.graphml", "graphml")
-g <- read.graph("test1/1/5.graphml", "graphml")
+g <- read.graph("test1/1/3.graphml", "graphml")
 V(g)$color <- 1
 
 # setEPS()
@@ -39,7 +39,7 @@ plot(g, layout=layout_as_bipartite, main='input graph', vertex.size=40, vertex.l
 # 3-pseudocoloring
 ```{r}
 tic("3-pseudocoloring")
-threePseudocoloring <- three_pseudocoloring(g, c)
+threePseudocoloring <- three_pseudocoloring(g, c, TRUE)
 toc()
 
 threePseudocoloring
@@ -56,7 +56,7 @@ result_print(g, sum)
 # Test 27/26-algorithm
 ```{r}
 tic("27/26-approximate algorithm")
-result <- four_coloring(g, c)
+result <- four_coloring(g, c, TRUE)
 toc()
 
 S <- result[[1]]
@@ -77,13 +77,14 @@ result_print(B[[1]], B[[2]])
 tic('test 1')
 n <- 8
 density <- c(0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
-density <- c(0.4)
+df <- data.frame()
+
 for (i in 1:length(density)) {
   path <- paste0('test1/', i)
   if (!dir.exists(path))
     dir.create(path)
   
-  for(j in 1:10) {
+  for(j in 1:500) {
     graph <- sample_bipartite(n/2, n/2, p=density[i])
     V(graph)$weight <- sample(c(1,2,6,24), n, replace = TRUE)
     V(graph)$name <- letters[1:n]
@@ -94,15 +95,74 @@ for (i in 1:length(density)) {
     V(graph)$color = V(approximated[[1]])$color
     V(graph)$color2 = V(bruteForced[[1]])$color
     graph$approximated = approximated[[2]]
-    graph$optimal = sum_coloring(bruteForced[[1]], c)
+    graph$optimal = bruteForced[[2]]
     
-    print(graph$approximated)
-    print(graph$optimal)
+    df <- rbind(df, data.frame(list(group = i, counter = j, density = density[i], approximated = approximated[[2]], optimal = bruteForced[[2]], ratio = approximated[[2]] / bruteForced[[2]])))
     
-    write_graph(graph, paste0('test1/', i ,'/', j, '.graphml'), "graphml")
+    write_graph(graph, paste0('test1/', i ,'-', j, '.graphml'), "graphml")
   }
 }
 toc()
+
+saveRDS(df, file = 'test1/data.rds')
+```
+# Playing with data frame
+```{r}
+df <- readRDS(file = 'test1/data.rds')
+invalids <- df[df$ratio > 27/26,]
+invalids
+```
+
+```{r}
+fixed <- data.frame()
+tic('fixing')
+# for (i in 1:nrow(invalids)) {
+for (i in 1:10) {
+  group <- invalids[i,1]
+  counter <- invalids[i,2]
+  g <- read.graph(paste0('test1/', group, '/', counter,'.graphml'), "graphml")
+  
+  approximated <- four_coloring(g, c)
+  bruteForced <- brute_force(g, c, approximated[[2]])
+  
+  V(g)$color = V(approximated[[1]])$color
+  V(g)$color2 = V(bruteForced[[1]])$color
+  g$approximated = approximated[[2]]
+  g$optimal = bruteForced[[2]]
+  g$ratio = g$approximated / g$optimal
+  
+  fixed <- rbind(fixed, data.frame(list(group = group, counter = counter, density = invalids[i,3], approximated = approximated[[2]], optimal = bruteForced[[2]], ratio = approximated[[2]] / bruteForced[[2]])))
+  
+  write_graph(g, paste0('test1/fixed/', group ,'-', counter, '.graphml'), "graphml")
+}
+
+toc()
+saveRDS(fixed, file = 'test1/fixed.rds')
+
+```
+```{r}
+fixed
+```
+# Compare algorithms for single graph
+```{r}
+source("src/3-pseudocoloring.R")
+source("src/2-coloring.R")
+source("src/is_colored_properly.R")
+source("src/sum_coloring.R")
+source("src/27_26-approximate-coloring.R")
+source("src/brute_force.R")
+source("src/is_optimal.R")
+
+g <- read.graph("test1/1/25.graphml", "graphml")
+
+tic('compare algorithms for single graph')
+approximated <- four_coloring(g, c, TRUE)
+bruteForced <- brute_force(g, c, approximated[[2]], TRUE)
+toc()
+
+print(approximated[[2]] / bruteForced[[2]])
+
+
 ```
 # Test 0
 ```{r}
@@ -136,14 +196,6 @@ g$optimal <- Bsum == Ssum
 write_graph(g, "graphs/test1/9_04.graphml", "graphml")
 
 ```
-# graph generator
-```{r}
-n = 9
-g <- sample_bipartite(floor(n/2), ceiling(n/2), p=0.8)
-V(g)$weight = sample(c(1,2,6,24), n, replace = TRUE)
-V(g)$name <- letters[1:n]
-```
-
 # Test 1 - different weight combinations
 ```{r}
 tic('Generating graphs for test1')
@@ -159,63 +211,4 @@ for (i in 1:length(weights)**length(V(g))) {
   write_graph(gtmp, paste0('graphs/test1/', i, '.graphml'), "graphml")
 }
 toc()
-```
-# Write graph
-```{r}
-write_graph(g, "graphs/points_7_8_case.graphml", "graphml")
-```
-# Generate graphs to tests
-```{r}
-density <- c(0.2, 0.4, 0.6, 0.8, 1)
-n <- 8
-
-graphs <- lapply(density, function(x) {
-  g <- sample_bipartite(floor(n/2), ceiling(n/2), p = x)
-  V(g)$weight <- sample(1:10, n, replace = T)
-  
-  return (g)
-})
-graphs[[i]]
-
-for (i in 1:length(graphs)) {
-  # tic('Brute Force')
-  # B <- brute_force(graphs[[i]], c)
-  # Bsum <- color_sum(B, c)
-  # toc()
-  
-  # tic('27/26 - approximate')
-  # A <- four_coloring(graphs[[i]], c)
-  # Asum <- color_sum(A, c)
-  # toc()
-
-  # print(paste('Approximation: ', Bsum / Asum))
-}
-
-```
-# Number of combinations
-```{r}
-for (n in 1:20) {
-  g3 <- make_full_bipartite_graph(floor(n/2), ceiling(n/2))
-  
-  proper <- 0
-    
-  for(j in k**n) {
-    coloring <- sapply(as.list(rep(j, n)), function(x){
-      i <- parent.frame()$i[]
-      index <- 1 + (x / k ** (i-1)) %% k
-      return(c[index])
-    })
-    
-    V(g3)$color <- coloring
-    
-    if(colored_properly(graph)) {
-      proper <- proper + 1
-    }
-    
-  }
-  
-  print(n)
-  print(k**n)
-  print('next')
-}
 ```

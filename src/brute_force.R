@@ -1,4 +1,4 @@
-brute_force <- function(graph, colors, initialSum = 0) {
+brute_force <- function(graph, colors, initialSum = 0, debug = FALSE) {
   n <- length(V(graph))
   k < length(colors)
   
@@ -36,5 +36,14 @@ brute_force <- function(graph, colors, initialSum = 0) {
     }
   }
   
-  return(list(g2, sum_coloring(g2, c)))
+  bGraph <- g2
+  bSum <- sum_coloring(bGraph, c)
+  
+  if (debug) {
+    title <- paste('bruteForced:', bSum)
+    dGraph <- bGraph
+    plot(dGraph, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main=title, vertex.label = paste0(V(dGraph)$name, '/', V(dGraph)$weight, '/', V(dGraph)$color))
+  }
+  
+  return(list(bGraph, bSum))
 }
