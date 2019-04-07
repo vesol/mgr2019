@@ -3,8 +3,8 @@ three_pseudocoloring <- function(graph, colors, debug = FALSE) {
   l <- (colors[3] - colors[1]) / (colors[2] - colors[1])
   
   twoColoring <- two_coloring(g)
-  Va <- V(g)[name %in% twoColoring[[2]]]
-  Vb <- V(g)[name %in% twoColoring[[1]]]
+  Va <- V(g)[name %in% twoColoring[[1]]]
+  Vb <- V(g)[name %in% twoColoring[[2]]]
 
   Va_ <- paste0(Va$name, '*')
   Vb_ <- paste0(Vb$name, '*')

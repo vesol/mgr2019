@@ -112,12 +112,11 @@ df <- readRDS(file = 'test1/data.rds')
 invalids <- df[df$ratio > 27/26,]
 invalids
 ```
-
 ```{r}
 fixed <- data.frame()
 tic('fixing')
 # for (i in 1:nrow(invalids)) {
-for (i in 1:10) {
+for (i in 1:20) {
   group <- invalids[i,1]
   counter <- invalids[i,2]
   g <- read.graph(paste0('test1/', group, '/', counter,'.graphml'), "graphml")
@@ -141,7 +140,7 @@ saveRDS(fixed, file = 'test1/fixed.rds')
 
 ```
 ```{r}
-fixed
+fixed[fixed$ratio > 1,]
 ```
 # Compare algorithms for single graph
 ```{r}
@@ -153,7 +152,7 @@ source("src/27_26-approximate-coloring.R")
 source("src/brute_force.R")
 source("src/is_optimal.R")
 
-g <- read.graph("test1/1/25.graphml", "graphml")
+g <- read.graph("test1/1/17.graphml", "graphml")
 
 tic('compare algorithms for single graph')
 approximated <- four_coloring(g, c, TRUE)
