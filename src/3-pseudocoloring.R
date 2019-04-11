@@ -5,6 +5,15 @@ three_pseudocoloring <- function(graph, colors, debug = FALSE) {
   twoColoring <- two_coloring(g)
   Va <- V(g)[name %in% twoColoring[[1]]]
   Vb <- V(g)[name %in% twoColoring[[2]]]
+  
+  if(length(Vb) == 0) {
+    if (debug) {
+      V(g)$color <- 1
+      plot(g, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main='3-pseudocoloring', vertex.label = paste0(V(g)$name, '/', V(g)$weight, '/', V(g)$color))
+    }
+    
+    return(list(Va$name, c(), c()))
+  }
 
   Va_ <- paste0(Va$name, '*')
   Vb_ <- paste0(Vb$name, '*')
@@ -45,21 +54,27 @@ three_pseudocoloring <- function(graph, colors, debug = FALSE) {
   }
   
   stCuts <- st_min_cuts(D, source = "s", target = "t")
-  
-  if (length(stCuts$partition1s) == 0) {
-    if (debug) {
-      V(g)[name %in% Va]$color <- 1
-      V(g)[name %in% Vb]$color <- 2
-      plot(g, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main='3-pseudocoloring (no s-t cut)', vertex.label = paste0(V(g)$name, '/', V(g)$weight, '/', V(g)$color))
-    }
-    
-    return(list(Va$name, Vb$name, c()))
-  }
+
+  # if (length(stCuts$partition1s) == 0) {
+  #   if (debug) {
+  #     V(g)[name %in% Va$name]$color <- 1
+  #     V(g)[name %in% Vb$name]$color <- 2
+  #     plot(g, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main='3-pseudocoloring (no s-t cut)', vertex.label = paste0(V(g)$name, '/', V(g)$weight, '/', V(g)$color))
+  #   }
+  # 
+  #   return(list(Va$name, Vb$name, c()))
+  # }
   
   T <- D - stCuts$partition1s[[1]]
   S <- delete.vertices(D, V(T)$name)
   VT = V(T)$name
   VS = V(S)$name
+  
+  if (debug) {
+    print('before clean up')
+    print(VT)
+    print(VS)
+  }
   
   '%!in%' <- function(x,y)!('%in%'(x,y))
   
@@ -75,11 +90,21 @@ three_pseudocoloring <- function(graph, colors, debug = FALSE) {
   VS <- VS[VS %!in% move_to_T]
   VT <- c(VT, move_to_T)
   
+  if (debug) {
+    print('after clean up')
+    print(VT)
+    print(VS)
+  }
+  
   V1 <-union(intersect(VS, Va$name), intersect(VT, Vb$name))
   V2 <- gsub('[*]', '', union(intersect(VS, Vb_), intersect(VT, Va_)))
   V3 <- intersect(setdiff(V(D)$name, union(V1, V2)), union(Va$name, Vb$name))
 
   if (debug) {
+    print(V1)
+    print(V2)
+    print(V3)
+    
     V(g)[name %in% V1]$color <- 1
     V(g)[name %in% V2]$color <- 2
     V(g)[name %in% V3]$color <- 3

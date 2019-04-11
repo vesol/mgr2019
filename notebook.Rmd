@@ -28,7 +28,7 @@ source("src/is_optimal.R")
 ```{r}
 c <- c(1,2,3,4)
 # g <- read.graph("graphs/bipartite.graphml", "graphml")
-g <- read.graph("test1/1/3.graphml", "graphml")
+g <- read.graph("test0407/6-3.graphml", "graphml")
 V(g)$color <- 1
 
 # setEPS()
@@ -74,13 +74,13 @@ result_print(B[[1]], B[[2]])
 ```
 # Test 1
 ```{r}
-tic('test 1')
+tic('test')
 n <- 8
 density <- c(0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
 df <- data.frame()
 
 for (i in 1:length(density)) {
-  path <- paste0('test1/', i)
+  path <- paste0('test0704/', i)
   if (!dir.exists(path))
     dir.create(path)
   
@@ -99,27 +99,27 @@ for (i in 1:length(density)) {
     
     df <- rbind(df, data.frame(list(group = i, counter = j, density = density[i], approximated = approximated[[2]], optimal = bruteForced[[2]], ratio = approximated[[2]] / bruteForced[[2]])))
     
-    write_graph(graph, paste0('test1/', i ,'-', j, '.graphml'), "graphml")
+    write_graph(graph, paste0('test0704/', i ,'-', j, '.graphml'), "graphml")
   }
 }
 toc()
 
-saveRDS(df, file = 'test1/data.rds')
+saveRDS(df, file = 'test0704/data.rds')
 ```
 # Playing with data frame
 ```{r}
-df <- readRDS(file = 'test1/data.rds')
+df <- readRDS(file = 'test0407/data.rds')
 invalids <- df[df$ratio > 27/26,]
 invalids
 ```
 ```{r}
 fixed <- data.frame()
 tic('fixing')
-# for (i in 1:nrow(invalids)) {
-for (i in 1:20) {
+for (i in 1:nrow(invalids)) {
+# for (i in 1:1) {
   group <- invalids[i,1]
   counter <- invalids[i,2]
-  g <- read.graph(paste0('test1/', group, '/', counter,'.graphml'), "graphml")
+  g <- read.graph(paste0('test0407/', group, '-', counter,'.graphml'), "graphml")
   
   approximated <- four_coloring(g, c)
   bruteForced <- brute_force(g, c, approximated[[2]])
@@ -132,18 +132,23 @@ for (i in 1:20) {
   
   fixed <- rbind(fixed, data.frame(list(group = group, counter = counter, density = invalids[i,3], approximated = approximated[[2]], optimal = bruteForced[[2]], ratio = approximated[[2]] / bruteForced[[2]])))
   
-  write_graph(g, paste0('test1/fixed/', group ,'-', counter, '.graphml'), "graphml")
+  write_graph(g, paste0('test0407/fixed/', group ,'-', counter, '.graphml'), "graphml")
+  break
 }
 
 toc()
-saveRDS(fixed, file = 'test1/fixed.rds')
+saveRDS(fixed, file = 'test0407/fixed.rds')
 
 ```
 ```{r}
 fixed[fixed$ratio > 1,]
 ```
-# Compare algorithms for single graph
+# Compare algorithms for single graph6
 ```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
+
 source("src/3-pseudocoloring.R")
 source("src/2-coloring.R")
 source("src/is_colored_properly.R")
@@ -152,16 +157,33 @@ source("src/27_26-approximate-coloring.R")
 source("src/brute_force.R")
 source("src/is_optimal.R")
 
-g <- read.graph("test1/1/17.graphml", "graphml")
+g <- read.graph("test0407/1-5.graphml", "graphml")
+# two_coloring(g, TRUE)
+# three_pseudocoloring(g, c, TRUE)
+V(g)$color <- 1
+plot(g, layout=layout_as_bipartite, main='input graph', vertex.size=40, vertex.label.cex=1, vertex.label = paste(V(g)$name, '/', V(g)$weight))
 
-tic('compare algorithms for single graph')
-approximated <- four_coloring(g, c, TRUE)
-bruteForced <- brute_force(g, c, approximated[[2]], TRUE)
-toc()
+parts <- decompose(g)
+result <- four_coloring(parts[[1]], c)
+graph <- result[[1]]
+sum <- result[[2]]
+  
+if(length(parts) > 1) {
+  for(i in 2:length(parts)) {
+    result <- four_coloring(parts[[i]], c)
+    graph <- graph + result[[1]]
+    sum <- sum + result[[2]]
+  }
+}
 
-print(approximated[[2]] / bruteForced[[2]])
+plot(graph, palette=diverging_pal(4), main=paste0('approximate:', sum), vertex.size=40, vertex.label.cex=1, vertex.label = paste(V(graph)$name, '/', V(graph)$weight))
 
-
+# tic('compare algorithms for single graph')
+# approximated <- four_coloring(g, c, TRUE)
+# bruteForced <- brute_force(g, c, approximated[[2]], TRUE)
+# toc()
+# 
+# print(approximated[[2]] / bruteForced[[2]])
 ```
 # Test 0
 ```{r}

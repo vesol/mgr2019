@@ -1,0 +1,68 @@
+---
+title: "Test 1"
+output: html_notebook
+---
+
+```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
+
+source("src/3-pseudocoloring.R")
+source("src/2-coloring.R")
+source("src/is_colored_properly.R")
+source("src/sum_coloring.R")
+source("src/27_26-approximate-coloring.R")
+source("src/brute_force.R")
+```
+
+Run tests
+
+```{r}
+c <- c(1,2,3,4)
+n <- 8
+density <- c(0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+df <- data.frame()
+path <- 'test0411/'
+if (!dir.exists(path))
+  dir.create(path)
+
+tic(paste0('test: ', path))
+for (i in 1:length(density)) {
+  for(j in 1:1) {
+    graph <- sample_bipartite(n/2, n/2, p=density[i])
+    V(graph)$weight <- sample(c(1,2,6,24), n, replace = TRUE)
+    V(graph)$name <- letters[1:n]
+    
+    parts <- decompose(graph)
+    sumA <- 0
+    sumB <- 0
+    
+    for(k in 1:length(parts)) {
+      resultA <- four_coloring(parts[[k]], c)
+      V(graph)[V(resultA[[1]])$name]$color <- V(resultA[[1]])$color
+      sumA <- sumA + resultA[[2]]
+    }
+    
+    resultB <- brute_force(graph, c, sumA)
+    V(graph)$color2 <- V(resultB[[1]])$color
+    sumB <- resultB[[2]]
+    
+    graph$approximated = sumA
+    graph$optimal = sumB
+    
+    df <- rbind(df, data.frame(list(group = i, counter = j, density = density[i], approximated = sumA, optimal = sumB, ratio = sumA / sumB)))
+    
+    write_graph(graph, paste0(path, i ,'-', j, '.graphml'), "graphml")
+  }
+}
+toc()
+
+saveRDS(df, file = paste0(path, 'data.rds'))
+```
+
+```{r}
+df <- readRDS(file = paste0(path, 'data.rds'))
+df
+```
+

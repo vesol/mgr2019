@@ -1,6 +1,6 @@
 brute_force <- function(graph, colors, initialSum = 0, debug = FALSE) {
   n <- length(V(graph))
-  k < length(colors)
+  k <- length(colors)
   
   colorings <- mclapply(seq(1,k**n), mc.cores = detectCores(), function(j) {
     coloring <- sapply(as.list(rep(j, n)), function(x){

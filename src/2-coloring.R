@@ -1,13 +1,8 @@
 two_coloring <- function(graph, debug = FALSE){
   g <- graph
-  x <- dfs(g, V(g)[order(-weight)][1])
+  x <- dfs(g, V(g)[1])
   va <- c()
   vb <- c()
-  
-  if (debug) {
-    print('dfs order:')
-    print(x$order)
-  }
   
   for(i in 1:length(x$order)) {
     v <- x$order[i]
@@ -19,10 +14,10 @@ two_coloring <- function(graph, debug = FALSE){
       vb <- unique(c(vb, others))
     } else if (name %in% vb) {
       va <- unique(c(va, others))
-    } else if (any(others %in% va)) {
+    } else if (any(others %in% vb)) {
       vb <- c(vb, name)
       va <- unique(c(va, others))
-    } else {
+    } else if (any(others %in% va)) {
       va <- c(va, name)
       vb <- unique(c(vb, others))
     }
@@ -32,6 +27,11 @@ two_coloring <- function(graph, debug = FALSE){
       tmpB <- vb
       va <- tmpB
       vb <- tmpA
+    }
+    
+    if (!name %in% va & !name %in% vb) {
+      va <- c(va, name)
+      vb <- unique(c(vb, others))
     }
   }
   

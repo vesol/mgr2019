@@ -26,7 +26,11 @@ four_coloring <- function(graph, colors, debug = FALSE) {
   V2 <- threePseudoColoring[[2]]
   S2 <- graph
   S2small <- induced_subgraph(S2, c(V2, V3))
-  S2v <- two_coloring(S2small)
+  if (length(V(S2small)) == 0) {
+    return(list(S1, sum1))
+  }
+  
+  S2v <- two_coloring(S2small, debug)
   S2a <- S2v[[1]]
   S2b <- S2v[[2]]
   
@@ -52,7 +56,7 @@ four_coloring <- function(graph, colors, debug = FALSE) {
   S3 <- graph
   S3small <- induced_subgraph(S3, V3)
   
-  S3v <- two_coloring(S3small)
+  S3v <- two_coloring(S3small, debug)
   S3a <- S3v[[1]]
   S3b <- S3v[[2]]
   

@@ -1,0 +1,81 @@
+---
+title: "Single graph compa"
+output: html_notebook
+---
+
+First load all libraries and functions
+
+```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
+
+source("src/3-pseudocoloring.R")
+source("src/2-coloring.R")
+source("src/is_colored_properly.R")
+source("src/sum_coloring.R")
+source("src/27_26-approximate-coloring.R")
+source("src/brute_force.R")
+```
+
+Load graph
+
+```{r}
+c <- c(1,2,3,4)
+g <- read.graph("test0411/6-1.graphml", "graphml")
+g <- read.graph("graphs/bipartite.graphml", "graphml")
+V(g)$color <- 1
+parts <- decompose(g)
+
+plot(g, layout=layout_as_bipartite, main='input graph', vertex.size=40, vertex.label.cex=1, vertex.label = paste(V(g)$name, '/', V(g)$weight))
+```
+
+Approximate algorithm
+
+```{r}
+graphA <- g
+sumA <- 0
+
+tic('approximate')
+for(i in 1:length(parts)) {
+  result <- four_coloring(parts[[i]], c)
+  V(graphA)[V(result[[1]])$name]$color <- V(result[[1]])$color
+  sumA <- sumA + result[[2]]
+}
+toc()
+
+plot(graphA, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('approximate:', sumA), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graphA)$name, '/', V(graphA)$weight, '/', V(graphA)$color))
+```
+
+Brute Force algorithm
+
+# ```{r}
+# graphB <- g
+# sumB <- 0
+# 
+# print(c)
+# tic('brute force')
+# for(i in 1:length(parts)) {
+#   result <- brute_force(parts[[i]], c)
+#   V(graphB)[V(result[[1]])$name]$color <- V(result[[1]])$color
+#   sumB <- sumB + result[[2]]
+# }
+# toc()
+# 
+# plot(graphB, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('brute force:', sumB), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graphB)$name, '/', V(graphB)$weight, '/', V(graphB)$color))
+# ```
+
+Brute force without decompose
+
+```{r}
+graph <- g
+
+tic('brute force without decompose')
+result <- brute_force(graph, c, sumA)
+toc()
+
+graphB2 <- result[[1]]
+sumB2 <- result[[2]]
+
+plot(graphB2, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('brute force:', sumB2), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graphB2)$name, '/', V(graphB2)$weight, '/', V(graphB2)$color))
+```
