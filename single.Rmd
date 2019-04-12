@@ -22,8 +22,8 @@ Load graph
 
 ```{r}
 c <- c(1,2,3,4)
-g <- read.graph("test0411/6-1.graphml", "graphml")
-g <- read.graph("graphs/bipartite.graphml", "graphml")
+g <- read.graph("test0411/6-138.graphml", "graphml")
+# g <- read.graph("graphs/bipartite.graphml", "graphml")
 V(g)$color <- 1
 parts <- decompose(g)
 
@@ -44,26 +44,8 @@ for(i in 1:length(parts)) {
 }
 toc()
 
-plot(graphA, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('approximate:', sumA), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graphA)$name, '/', V(graphA)$weight, '/', V(graphA)$color))
+plot(graphA, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('approximate: ', sumA), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graphA)$name, '/', V(graphA)$weight, '/', V(graphA)$color))
 ```
-
-Brute Force algorithm
-
-# ```{r}
-# graphB <- g
-# sumB <- 0
-# 
-# print(c)
-# tic('brute force')
-# for(i in 1:length(parts)) {
-#   result <- brute_force(parts[[i]], c)
-#   V(graphB)[V(result[[1]])$name]$color <- V(result[[1]])$color
-#   sumB <- sumB + result[[2]]
-# }
-# toc()
-# 
-# plot(graphB, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('brute force:', sumB), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graphB)$name, '/', V(graphB)$weight, '/', V(graphB)$color))
-# ```
 
 Brute force without decompose
 

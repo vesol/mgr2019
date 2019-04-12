@@ -176,7 +176,7 @@ if(length(parts) > 1) {
   }
 }
 
-plot(graph, palette=diverging_pal(4), main=paste0('approximate:', sum), vertex.size=40, vertex.label.cex=1, vertex.label = paste(V(graph)$name, '/', V(graph)$weight))
+plot(graph, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('approximate:', sum), vertex.size=40, vertex.label.cex=1, vertex.label = paste(V(graph)$name, '/', V(graph)$weight))
 
 # tic('compare algorithms for single graph')
 # approximated <- four_coloring(g, c, TRUE)

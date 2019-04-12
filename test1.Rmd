@@ -14,6 +14,8 @@ source("src/is_colored_properly.R")
 source("src/sum_coloring.R")
 source("src/27_26-approximate-coloring.R")
 source("src/brute_force.R")
+
+path <- 'test0411/'
 ```
 
 Run tests
@@ -23,7 +25,6 @@ c <- c(1,2,3,4)
 n <- 8
 density <- c(0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
 df <- data.frame()
-path <- 'test0411/'
 if (!dir.exists(path))
   dir.create(path)
 
@@ -42,8 +43,14 @@ for (i in 1:length(density)) {
       resultA <- four_coloring(parts[[k]], c)
       V(graph)[V(resultA[[1]])$name]$color <- V(resultA[[1]])$color
       sumA <- sumA + resultA[[2]]
+      
+      # Option 1 <- split brute force with graph decompose
+      # resultB <- brute_force(graph, c, resultA[[2]])
+      # V(graph)[V(resultB[[1]])$name]$color2 <- V(resultB[[1]])$color
+      # sumB <- sumB + resultB[[2]]
     }
     
+    # Option 2 <- brute force without decomposing
     resultB <- brute_force(graph, c, sumA)
     V(graph)$color2 <- V(resultB[[1]])$color
     sumB <- resultB[[2]]
@@ -61,8 +68,11 @@ toc()
 saveRDS(df, file = paste0(path, 'data.rds'))
 ```
 
+Approximation > 27/26
+
 ```{r}
 df <- readRDS(file = paste0(path, 'data.rds'))
-df
+invalids <- df[df$ratio > 27/26,]
+invalids
 ```
 
