@@ -4,3 +4,10 @@ diploma.*
 .RData
 .Rhistory
 .idea
+/test*
+/cases/
+/graphs/*
+/graphics/*
+*.html
+*.pdf
+*.eps

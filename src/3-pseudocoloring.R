@@ -40,7 +40,7 @@ three_pseudocoloring <- function(graph, colors, debug = FALSE) {
   }
   
   for(i in 1:length(E(g))) {
-    w <- 100000000000  # Here should be Inf, but unfortunetaly Inf break algorithm
+    w <- 1000000  # Here should be Inf, but unfortunetaly Inf break algorithm
 
     # w <- Inf
     

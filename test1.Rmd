@@ -15,7 +15,7 @@ source("src/sum_coloring.R")
 source("src/27_26-approximate-coloring.R")
 source("src/brute_force.R")
 
-path <- 'test0411/'
+path <- 'test0413/'
 ```
 
 Run tests
@@ -30,7 +30,7 @@ if (!dir.exists(path))
 
 tic(paste0('test: ', path))
 for (i in 1:length(density)) {
-  for(j in 1:1) {
+  for(j in 1:5000) {
     graph <- sample_bipartite(n/2, n/2, p=density[i])
     V(graph)$weight <- sample(c(1,2,6,24), n, replace = TRUE)
     V(graph)$name <- letters[1:n]

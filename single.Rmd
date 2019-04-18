@@ -22,7 +22,7 @@ Load graph
 
 ```{r}
 c <- c(1,2,3,4)
-g <- read.graph("test0411/6-138.graphml", "graphml")
+g <- read.graph("test0413/3-64.graphml", "graphml")
 # g <- read.graph("graphs/bipartite.graphml", "graphml")
 V(g)$color <- 1
 parts <- decompose(g)
@@ -52,7 +52,7 @@ Brute force without decompose
 ```{r}
 graph <- g
 
-tic('brute force without decompose')
+tic('brute force')
 result <- brute_force(graph, c, sumA)
 toc()
 
@@ -61,3 +61,50 @@ sumB2 <- result[[2]]
 
 plot(graphB2, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('brute force:', sumB2), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graphB2)$name, '/', V(graphB2)$weight, '/', V(graphB2)$color))
 ```
+# Combine
+
+```{r}
+graph <- read.graph("test0413/6-468.graphml", "graphml")
+parts <- decompose(graph)
+sumA <- 0
+sumB <- 0
+    
+tic('combine')
+for(k in 1:length(parts)) {
+    resultA <- four_coloring(parts[[k]], c)
+    V(graph)[V(resultA[[1]])$name]$color <- V(resultA[[1]])$color
+    sumA <- sumA + resultA[[2]]
+      
+    resultB <- brute_force(graph, c, resultA[[2]])
+    V(graph)[V(resultB[[1]])$name]$color2 <- V(resultB[[1]])$color
+    sumB <- sumB + resultB[[2]]
+}
+toc()
+
+plot(graph, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('approximate:', sumA), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graph)$name, '/', V(graph)$weight, '/', V(graph)$color), vertex.color = V(graph)$color)
+
+plot(graph, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('brute force:', sumB), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graph)$name, '/', V(graph)$weight, '/', V(graph)$color2), vertex.color = V(graph)$color2)
+
+```
+
+# Debug
+
+```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
+
+source("src/3-pseudocoloring.R")
+source("src/2-coloring.R")
+source("src/is_colored_properly.R")
+source("src/sum_coloring.R")
+source("src/27_26-approximate-coloring.R")
+source("src/brute_force.R")
+
+graph <- read.graph("test0413/6-468.graphml", "graphml")
+colors <- c(1,2,3,4)
+
+three_pseudocoloring(graph, colors, TRUE)
+```
+
+
