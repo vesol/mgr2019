@@ -22,8 +22,7 @@ Load graph
 
 ```{r}
 c <- c(1,2,3,4)
-g <- read.graph("test0413/3-64.graphml", "graphml")
-# g <- read.graph("graphs/bipartite.graphml", "graphml")
+g <- read.graph("test0413/2-269.graphml", "graphml")
 V(g)$color <- 1
 parts <- decompose(g)
 
@@ -38,7 +37,7 @@ sumA <- 0
 
 tic('approximate')
 for(i in 1:length(parts)) {
-  result <- four_coloring(parts[[i]], c)
+  result <- four_coloring(parts[[i]], c, TRUE)
   V(graphA)[V(result[[1]])$name]$color <- V(result[[1]])$color
   sumA <- sumA + result[[2]]
 }
@@ -47,7 +46,7 @@ toc()
 plot(graphA, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('approximate: ', sumA), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graphA)$name, '/', V(graphA)$weight, '/', V(graphA)$color))
 ```
 
-Brute force without decompose
+Brute force
 
 ```{r}
 graph <- g
@@ -64,11 +63,25 @@ plot(graphB2, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0(
 # Combine
 
 ```{r}
-graph <- read.graph("test0413/6-468.graphml", "graphml")
+library(igraph)
+library(parallel)
+library(tictoc)
+
+source("src/3-pseudocoloring.R")
+source("src/2-coloring.R")
+source("src/is_colored_properly.R")
+source("src/sum_coloring.R")
+source("src/27_26-approximate-coloring.R")
+source("src/brute_force.R")
+
+# graph <- read.graph("test0413/2-467.graphml", "graphml")
+graph <- read.graph("graphs/bipartite.graphml", "graphml")
 parts <- decompose(graph)
 sumA <- 0
 sumB <- 0
-    
+   
+colors <- c(1,2,3,4)
+three_pseudocoloring(graph, colors, TRUE) 
 tic('combine')
 for(k in 1:length(parts)) {
     resultA <- four_coloring(parts[[k]], c)
@@ -101,10 +114,12 @@ source("src/sum_coloring.R")
 source("src/27_26-approximate-coloring.R")
 source("src/brute_force.R")
 
-graph <- read.graph("test0413/6-468.graphml", "graphml")
 colors <- c(1,2,3,4)
+graph <- read.graph("test0413/2-467.graphml", "graphml")
+# graph <- read.graph("graphs/bipartite.graphml", "graphml")
 
 three_pseudocoloring(graph, colors, TRUE)
+# three_pseudocoloring(graph, colors, TRUE)
 ```
 
 
