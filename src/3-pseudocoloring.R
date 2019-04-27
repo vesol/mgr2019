@@ -1,6 +1,6 @@
 three_pseudocoloring <- function(graph, colors, debug = FALSE) {
   g <- graph
-  l <- (colors[3] - colors[1]) / (colors[2] - colors[1])
+  l <- (colors[3] - colors[2]) / (colors[2] - colors[1])
   
   twoColoring <- two_coloring(g)
   Va <- V(g)[name %in% twoColoring[[1]]]
@@ -41,7 +41,7 @@ three_pseudocoloring <- function(graph, colors, debug = FALSE) {
   }
   
   for(i in 1:length(E(g))) {
-    w <- +Inf
+    w <- Inf
     
     v1 <- V(g)[ends(g, E(g)[i])][type==Va[1]$type]$name
     v1_ <- paste0(v1, '*')
@@ -51,21 +51,16 @@ three_pseudocoloring <- function(graph, colors, debug = FALSE) {
     D <- D + edge(v1, v2, capacity = w, set = 'A_12')
     D <- D + edge(v2_, v1_, capacity = w, set = 'A_21')
   }
-
-  if (debug) {
-    # tkplot(D, edge.label = paste(E(D)$capacity, '/' , E(D)$set), canvas.height = 1200, canvas.width = 1200)
-  }
   
   flow <- max_flow(D, source = V(D)['s'], target =V(D)['t'])
   
+  if (debug) {
+    print(flow)
+    # tkplot(D, edge.label = paste(E(D)$capacity, '/' , E(D)$set), canvas.height = 1200, canvas.width = 1200)
+  }
+  
   VS = as_ids(flow$partition1)
   VT = as_ids(flow$partition2)
-  
-  if (debug) {
-    print('VS and VT')
-    print(VS)
-    print(VT)
-  }
    
   '%!in%' <- function(x,y)!('%in%'(x,y))
 
@@ -80,12 +75,6 @@ three_pseudocoloring <- function(graph, colors, debug = FALSE) {
   move_to_T <- c(intersect(SVb_, TVb))
   VS <- VS[VS %!in% move_to_T]
   VT <- c(VT, move_to_T)
-  
-  if (debug) {
-    print('VS and VT after manipulations')
-    print(VS)
-    print(VT)
-  }
 
   V1 <-union(intersect(VS, Va$name), intersect(VT, Vb$name))
   V2 <- gsub('[*]', '', union(intersect(VS, Vb_), intersect(VT, Va_)))

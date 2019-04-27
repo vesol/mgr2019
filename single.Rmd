@@ -16,51 +16,16 @@ source("src/is_colored_properly.R")
 source("src/sum_coloring.R")
 source("src/27_26-approximate-coloring.R")
 source("src/brute_force.R")
-```
 
-Load graph
-
-```{r}
 c <- c(1,2,3,4)
-g <- read.graph("test0413/2-269.graphml", "graphml")
+g <- read.graph("test0426/5-1.graphml", "graphml")
 V(g)$color <- 1
-parts <- decompose(g)
 
 plot(g, layout=layout_as_bipartite, main='input graph', vertex.size=40, vertex.label.cex=1, vertex.label = paste(V(g)$name, '/', V(g)$weight))
+
 ```
 
-Approximate algorithm
-
-```{r}
-graphA <- g
-sumA <- 0
-
-tic('approximate')
-for(i in 1:length(parts)) {
-  result <- four_coloring(parts[[i]], c, TRUE)
-  V(graphA)[V(result[[1]])$name]$color <- V(result[[1]])$color
-  sumA <- sumA + result[[2]]
-}
-toc()
-
-plot(graphA, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('approximate: ', sumA), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graphA)$name, '/', V(graphA)$weight, '/', V(graphA)$color))
-```
-
-Brute force
-
-```{r}
-graph <- g
-
-tic('brute force')
-result <- brute_force(graph, c, sumA)
-toc()
-
-graphB2 <- result[[1]]
-sumB2 <- result[[2]]
-
-plot(graphB2, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('brute force:', sumB2), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graphB2)$name, '/', V(graphB2)$weight, '/', V(graphB2)$color))
-```
-# Combine
+# Approximate algorithm
 
 ```{r}
 library(igraph)
@@ -74,27 +39,61 @@ source("src/sum_coloring.R")
 source("src/27_26-approximate-coloring.R")
 source("src/brute_force.R")
 
-# graph <- read.graph("test0413/2-467.graphml", "graphml")
-graph <- read.graph("graphs/bipartite.graphml", "graphml")
+c <- c(1,2,3,4)
+g <- read.graph("test0426/5-1.graphml", "graphml")
+parts <- decompose(g)
+graphA <- g
+sumA <- 0
+
+tic('approximate')
+for(i in 1:length(parts)) {
+  result <- four_coloring(parts[[i]], c)
+  V(graphA)[V(result[[1]])$name]$color <- V(result[[1]])$color
+  sumA <- sumA + result[[2]]
+}
+toc()
+
+plot(graphA, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('approximate: ', sumA), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graphA)$name, '/', V(graphA)$weight, '/', V(graphA)$color))
+```
+
+# Approximate and brute force
+
+```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
+
+source("src/3-pseudocoloring.R")
+source("src/2-coloring.R")
+source("src/is_colored_properly.R")
+source("src/sum_coloring.R")
+source("src/27_26-approximate-coloring.R")
+source("src/brute_force.R")
+
+graph <- read.graph("test0427/9.graphml", "graphml")
+# graph <- read.graph("test0426/5-1.graphml", "graphml")
 parts <- decompose(graph)
 sumA <- 0
 sumB <- 0
    
 colors <- c(1,2,3,4)
-three_pseudocoloring(graph, colors, TRUE) 
-tic('combine')
+
+plot(graph, layout = layout_as_bipartite, vertex.size = 40, vertex.label.cex = 1, vertex.label = V(graph)$name, vertex.color = 'orange')
+
+tic('compare approximate and brute force')
 for(k in 1:length(parts)) {
     resultA <- four_coloring(parts[[k]], c)
     V(graph)[V(resultA[[1]])$name]$color <- V(resultA[[1]])$color
     sumA <- sumA + resultA[[2]]
-      
-    resultB <- brute_force(graph, c, resultA[[2]])
-    V(graph)[V(resultB[[1]])$name]$color2 <- V(resultB[[1]])$color
-    sumB <- sumB + resultB[[2]]
 }
 toc()
 
-plot(graph, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('approximate:', sumA), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graph)$name, '/', V(graph)$weight, '/', V(graph)$color), vertex.color = V(graph)$color)
+resultB <- brute_force(graph, c, sumA)
+V(graph)$color2 <- V(resultB[[1]])$color
+sumB <- resultB[[2]]
+
+plot(graph, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('approximate:', sumA), vertex.size=40, vertex.label.cex=1, vertex.label
+     = paste0(V(graph)$name, '/', V(graph)$weight, '/', V(graph)$color), vertex.color = V(graph)$color)
 
 plot(graph, layout=layout_as_bipartite, palette=diverging_pal(4), main=paste0('brute force:', sumB), vertex.size=40, vertex.label.cex=1, vertex.label = paste0(V(graph)$name, '/', V(graph)$weight, '/', V(graph)$color2), vertex.color = V(graph)$color2)
 
@@ -115,11 +114,13 @@ source("src/27_26-approximate-coloring.R")
 source("src/brute_force.R")
 
 colors <- c(1,2,3,4)
-graph <- read.graph("test0413/2-467.graphml", "graphml")
+graph <- read.graph("test0426/5-1.graphml", "graphml")
 # graph <- read.graph("graphs/bipartite.graphml", "graphml")
 
-three_pseudocoloring(graph, colors, TRUE)
 # three_pseudocoloring(graph, colors, TRUE)
+four_coloring(graph, colors)
+# brute_force(graph, colors, 0, TRUE)
+
 ```
 
 
