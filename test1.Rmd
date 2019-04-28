@@ -4,12 +4,6 @@ output: html_notebook
 ---
 
 ```{r}
-
-```
-
-Run tests
-
-```{r}
 library(igraph)
 library(parallel)
 library(tictoc)
@@ -76,10 +70,36 @@ saveRDS(df, file = paste0(path, 'data.rds'))
 df
 ```
 
-Approximation > 27/26
+# Analyse results
 
 ```{r}
-df <- readRDS(file = paste0(path, 'data.rds'))
-df
+library(igraph)
+library(parallel)
+library(tictoc)
+
+source("src/3-pseudocoloring.R")
+source("src/2-coloring.R")
+source("src/is_colored_properly.R")
+source("src/sum_coloring.R")
+source("src/27_26-approximate-coloring.R")
+source("src/brute_force.R")
+
+path <- 'test0427/'
+
+df2 <- data.frame()
+
+tic('time')
+for(i in 1:probe) {
+  graph <- read.graph(paste0(path, i, '.graphml'), "graphml")
+  df2 <- rbind(df2, data.frame(list(index = i, approximated = graph$approximated, optimal = graph$optimal, ratio = graph$approximated / graph$optimal, colors = length(unique(V(graph)$color)), vertices = paste(V(graph)$weight, collapse=','), degree = paste(degree(graph), collapse = ','))))
+}
+toc()
+
+saveRDS(df2, file = paste0(path, 'data2.rds'))
 ```
 
+```{r}
+df2 <- readRDS('test0427/data2.rds')
+df2[df2$colors==4,]
+# df2[df2$vertices=='6,24,6,6,24,1,1,24',]
+```
