@@ -1,5 +1,5 @@
 ---
-title: "Test 1"
+title: "Tests"
 output: html_notebook
 ---
 
@@ -7,6 +7,7 @@ output: html_notebook
 library(igraph)
 library(parallel)
 library(tictoc)
+library(dplyr)
 
 source("src/3-pseudocoloring.R")
 source("src/2-coloring.R")
@@ -14,19 +15,21 @@ source("src/is_colored_properly.R")
 source("src/sum_coloring.R")
 source("src/27_26-approximate-coloring.R")
 source("src/brute_force.R")
+source("src/test0.R")
 
-path <- 'test0427/'
+path <- 'test1/0430/'
 
 c <- c(1,2,3,4)
 n <- 8
 
-probe <- 5000
+probe <- 20000
 
 if (!dir.exists(path))
   dir.create(path)
 
 df <- data.frame()
 
+Sys.time()
 tic(paste0('test: ', path))
 
 for(i in 1:probe) {
@@ -34,72 +37,80 @@ for(i in 1:probe) {
   graph <- sample_bipartite(n/2, n/2, p=p)
   V(graph)$weight <- sample(c(1,2,6,24), n, replace = TRUE)
   V(graph)$name <- letters[1:n]
+
+  if(test0(graph)) {
+    twoColoring <- two_coloring(graph)
+    V(graph)[twoColoring[[1]]]$color <- c[1]
+    V(graph)[twoColoring[[2]]]$color <- c[2]
+    sum <- sum_coloring(graph, c)
+    graph$approximated <- sum
+    graph$optimal <- sum
+  
+    df <- rbind(df, data.frame(list(
+      index = i, 
+      approximated = graph$approximated, 
+      optimal = graph$optimal, 
+      ratio = graph$approximated / graph$optimal, 
+      colors = length(unique(V(graph)$color)), 
+      vertices = paste(V(graph)$weight, collapse=','), 
+      degres = paste(degree(graph), collapse = ','),
+      test0 = TRUE
+    )))
+  
+    write_graph(graph, paste0(path, i , '.graphml'), "graphml")
+  
+    next;
+  }
   
   parts <- decompose(graph)
   sumA <- 0
   sumB <- 0
-  
+
   for(k in 1:length(parts)) {
     resultA <- four_coloring(parts[[k]], c)
     V(graph)[V(resultA[[1]])$name]$color <- V(resultA[[1]])$color
     sumA <- sumA + resultA[[2]]
-    
-    # Option 1 <- split brute force with graph decompose (not working)
-    # resultB <- brute_force(graph, c, resultA[[2]])
-    # V(graph)[V(resultB[[1]])$name]$color2 <- V(resultB[[1]])$color
-    # sumB <- sumB + resultB[[2]]
   }
-  
-  # Option 2 <- brute force without decomposing
+
   resultB <- brute_force(graph, c, sumA)
   V(graph)$color2 <- V(resultB[[1]])$color
   sumB <- resultB[[2]]
 
   graph$approximated = sumA
   graph$optimal = sumB
-  
-  df <- rbind(df, data.frame(list(index = i, approximated = sumA, optimal = sumB, ratio = sumA / sumB, colors = length(unique(V(graph)$color)))))
-  
+
+  df <- rbind(df, data.frame(list(
+    index = i, 
+    approximated = graph$approximated, 
+    optimal = graph$optimal, 
+    ratio = graph$approximated / graph$optimal,  
+    colors = length(unique(V(graph)$color)), 
+    vertices = paste(V(graph)$weight, collapse=','), 
+    degres = paste(degree(graph), collapse = ','),
+    test0 = FALSE
+  )))
+
   write_graph(graph, paste0(path, i , '.graphml'), "graphml")
 }
 
 toc()
+Sys.time()
 
 saveRDS(df, file = paste0(path, 'data.rds'))
 
 df
 ```
 
-# Analyse results
+# !test0
 
 ```{r}
-library(igraph)
-library(parallel)
-library(tictoc)
+file <- 'test0430/data.rds'
+df <- readRDS(file)
+df <- df %>% distinct()
 
-source("src/3-pseudocoloring.R")
-source("src/2-coloring.R")
-source("src/is_colored_properly.R")
-source("src/sum_coloring.R")
-source("src/27_26-approximate-coloring.R")
-source("src/brute_force.R")
-
-path <- 'test0427/'
-
-df2 <- data.frame()
-
-tic('time')
-for(i in 1:probe) {
-  graph <- read.graph(paste0(path, i, '.graphml'), "graphml")
-  df2 <- rbind(df2, data.frame(list(index = i, approximated = graph$approximated, optimal = graph$optimal, ratio = graph$approximated / graph$optimal, colors = length(unique(V(graph)$color)), vertices = paste(V(graph)$weight, collapse=','), degree = paste(degree(graph), collapse = ','))))
-}
-toc()
-
-saveRDS(df2, file = paste0(path, 'data2.rds'))
+ratio <- df[df$ratio!=1,]
+test0 <- df[df$test0==FALSE,]
+ratio
+table(test0$colors)
 ```
-
-```{r}
-df2 <- readRDS('test0427/data2.rds')
-df2[df2$colors==4,]
-# df2[df2$vertices=='6,24,6,6,24,1,1,24',]
 ```

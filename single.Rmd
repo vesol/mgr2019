@@ -71,6 +71,7 @@ source("src/27_26-approximate-coloring.R")
 source("src/brute_force.R")
 
 graph <- read.graph("test0427/169.graphml", "graphml")
+graph <- read.graph("graphs/bipartite.graphml", "graphml")
 # graph <- read.graph("test0426/5-1.graphml", "graphml")
 parts <- decompose(graph)
 sumA <- 0
@@ -78,7 +79,7 @@ sumB <- 0
    
 colors <- c(1,2,3,4)
 
-plot(graph, layout = layout_as_bipartite, vertex.size = 40, vertex.label.cex = 1, vertex.label = V(graph)$name, vertex.color = 'orange')
+plot(graph, layout = layout_as_bipartite, vertex.size = 40, vertex.label.cex = 1, vertex.label = paste0(V(graph)$name, '/', V(graph)$weight), vertex.color = 'orange')
 
 tic('compare approximate and brute force')
 for(k in 1:length(parts)) {

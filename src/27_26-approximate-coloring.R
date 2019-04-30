@@ -17,13 +17,13 @@ four_coloring <- function(graph, colors, debug = FALSE) {
   threePseudoColoring <- three_pseudocoloring(graph, colors, debug)
   
   V1 <- threePseudoColoring[[1]]
+  V2 <- threePseudoColoring[[2]]
   if (length(threePseudoColoring) == 2) {
     V3 <- c()
   } else {
     V3 <- threePseudoColoring[[3]]
   }
   
-  V2 <- threePseudoColoring[[2]]
   S2 <- graph
   S2small <- induced_subgraph(S2, c(V2, V3))
   if (length(V(S2small)) == 0) {
