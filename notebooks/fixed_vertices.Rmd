@@ -1,0 +1,154 @@
+---
+title: "Tests"
+output: html_notebook
+---
+
+```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
+library(dplyr)
+
+source("../src/3-pseudocoloring.R")
+source("../src/2-coloring.R")
+source("../src/is_colored_properly.R")
+source("../src/sum_coloring.R")
+source("../src/27_26-approximate-coloring.R")
+source("../src/brute_force.R")
+source("../src/test0.R")
+
+source('../generators/edge_sequence.R')
+
+test <- 't2-0502'
+path <- paste0('../graphs/', test, '/')
+
+if (!dir.exists(path))
+  dir.create(path)
+
+c <- c(1,2,3,4)
+df <- data.frame()
+
+graph <- make_empty_graph(n = 8, directed = FALSE)
+V(graph)[1:4]$type <- FALSE
+V(graph)[5:8]$type <- TRUE
+V(graph)$name <- letters[1:8]
+V(graph)$weight <- c(1,2,6,24,1,2,6,24)
+
+Sys.time()
+tic()
+for(i in 1:1000) {
+  g <- all_edges(graph, i)
+  write_graph(g, paste0(path, i , '.graphml'), "graphml")
+  
+  if(test0(g)) {
+    twoColoring <- two_coloring(g)
+    V(g)[twoColoring[[1]]]$color <- c[1]
+    V(g)[twoColoring[[2]]]$color <- c[2]
+    sum <- sum_coloring(g, c)
+    
+    df <- rbind(df, data.frame(list(
+      index = i,
+      approximated = sum,
+      optimal = sum,
+      ratio = sum / sum,
+      colors = 2,
+      test0 = TRUE
+    )))
+    
+    next;
+  }
+  
+  parts <- decompose(g)
+  sumA <- 0
+  sumB <- 0
+  
+  for(k in 1:length(parts)) {
+    resultA <- four_coloring(parts[[k]], c)
+    V(g)[V(resultA[[1]])$name]$color <- V(resultA[[1]])$color
+    sumA <- sumA + resultA[[2]]
+  }
+  
+  resultB <- brute_force(g, c, sumA)
+  V(g)$color2 <- V(resultB[[1]])$color
+  sumB <- resultB[[2]]
+  
+  df <- rbind(df, data.frame(list(
+    index = i,
+    approximated = sumA,
+    optimal = sumB,
+    ratio = sumA / sumB,
+    colors = length(unique(V(g)$color)),
+    test0 = FALSE
+  )))
+}
+toc()
+Sys.time()
+
+saveRDS(df, paste0(path, 'data.rds'))
+df
+```
+
+```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
+library(dplyr)
+
+source("../src/3-pseudocoloring.R")
+source("../src/2-coloring.R")
+source("../src/is_colored_properly.R")
+source("../src/sum_coloring.R")
+source("../src/27_26-approximate-coloring.R")
+source("../src/brute_force.R")
+source("../src/test0.R")
+
+test <- 't2-0502'
+
+df <- readRDS(paste0('../graphs/', test, '/data.rds'))
+
+df0 <- dfu[dfu$test0==FALSE,]
+
+print('sifted by test0:')
+nrow(df) - nrow(df0)
+
+print('colors')
+table(df0$colors)
+
+print('approximated:')
+nrow(df0[df0$ratio!=1,])
+df0[df0$ratio!=1,]
+
+df0
+```
+
+```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
+library(dplyr)
+
+source("../src/3-pseudocoloring.R")
+source("../src/2-coloring.R")
+source("../src/is_colored_properly.R")
+source("../src/sum_coloring.R")
+source("../src/27_26-approximate-coloring.R")
+source("../src/brute_force.R")
+source("../src/test0.R")
+
+source('../generators/edge_sequence.R')
+
+c <- c(1,2,3,4)
+
+graph <- make_empty_graph(n = 8, directed = FALSE)
+V(graph)[1:4]$type <- FALSE
+V(graph)[5:8]$type <- TRUE
+V(graph)$name <- letters[1:8]
+V(graph)$weight <- c(1,2,6,24,1,2,6,24)
+
+i = 18
+
+g <- all_edges(graph, i)
+degree(g)
+
+plot(g, layout=layout_as_bipartite)
+```

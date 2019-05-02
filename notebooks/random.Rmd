@@ -1,0 +1,119 @@
+---
+title: "Tests"
+output: html_notebook
+---
+
+```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
+library(dplyr)
+
+source("../src/3-pseudocoloring.R")
+source("../src/2-coloring.R")
+source("../src/is_colored_properly.R")
+source("../src/sum_coloring.R")
+source("../src/27_26-approximate-coloring.R")
+source("../src/brute_force.R")
+source("../src/test0.R")
+
+source("../generators/random_weights_and_edges.R")
+
+test <- 't1-0502'
+path <- paste0('../graphs/', test, '/')
+
+if (!dir.exists(path))
+  dir.create(path)
+
+df <- data.frame()
+
+Sys.time()
+tic()
+for(i in 1:60000) {
+  g <- random_weights_and_edges(n1 = 4, n2 = 4, weights = seq(10:15))
+  write_graph(g, paste0(path, i, '.graphml'), 'graphml')
+  
+  if(test0(g)) {
+    twoColoring <- two_coloring(g)
+    V(g)[twoColoring[[1]]]$color <- c[1]
+    V(g)[twoColoring[[2]]]$color <- c[2]
+    sum <- sum_coloring(g, c)
+    
+    df <- rbind(df, data.frame(list(
+      index = i,
+      approximated = sum,
+      optimal = sum,
+      ratio = sum / sum,
+      colors = 2,
+      edges = length(E(g)) / 16,
+      vertices = paste(V(g)$weight, collapse=','),
+      degres = paste(degree(g), collapse = ','),
+      test0 = TRUE
+    )))
+    
+    next;
+  }
+  
+  parts <- decompose(g)
+  sumA <- 0
+  sumB <- 0
+  
+  for(k in 1:length(parts)) {
+    resultA <- four_coloring(parts[[k]], c)
+    V(g)[V(resultA[[1]])$name]$color <- V(resultA[[1]])$color
+    sumA <- sumA + resultA[[2]]
+  }
+  
+  resultB <- brute_force(g, c, sumA)
+  V(g)$color2 <- V(resultB[[1]])$color
+  sumB <- resultB[[2]]
+  
+  df <- rbind(df, data.frame(list(
+    index = i,
+    approximated = sumA,
+    optimal = sumB,
+    ratio = sumA / sumB,
+    colors = length(unique(V(g)$color)),
+    edges = length(E(g)) / 16,
+    vertices = paste(V(g)$weight, collapse=','),
+    degres = paste(degree(g), collapse = ','),
+    test0 = FALSE
+  )))
+}
+toc()
+Sys.time()
+
+saveRDS(df, paste0(path, 'data.rds'))
+```
+
+# analyse tests
+
+```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
+library(dplyr)
+
+test <- 't1-0502'
+
+df <- readRDS(paste0('../graphs/', test, '/data.rds'))
+
+dfu <- df[,!(names(df)%in%c('index'))] %>% distinct()
+
+print('duplicates:')
+nrow(df) - nrow(dfu)
+
+df0 <- dfu[dfu$test0==FALSE,]
+
+print('sifted by test0:')
+nrow(dfu) - nrow(df0)
+df0
+
+print('colors:')
+table(df0$colors)
+
+print('approximated:')
+nrow(df0[df0$ratio!=1,])
+df0[df0$ratio!=1,]
+```
+```

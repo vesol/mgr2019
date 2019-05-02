@@ -37,7 +37,6 @@ Innym przykładem będzie organizacja warsztatów na dużej, międzynajodowej ko
 
 Aby przejść do rozwiązywania problemu kosztowego kolorowania grafów ważonych musimy zacząć od kilku definicji formalnych. 
 
-\includegraphics[scale=0.6]{graphs/reference_graph.eps}
 
 I tak, mając graf ważony $G_w = (V,E,w)$, gdzie $V$ to zbiór wierzchołków, $E$ to zbiór krawędzi, natomiast $w$ to wagi wierzchołków takie, że  $w:V \rightarrow R_+$ oraz palete (zestaw) kolorów $C = (c_1, c_2, ..)$ taką że $\forall c_i \in N_+$ staramy się znaleźć takie przyporządkowanie kolorów do wierzchołków, by zminimalizować sumę iloczynów wag w grafie $\sum w_i * c_i = min$ oraz by żadne dwa wierzchołki mające wspólną krawędź nie miały tego samego koloru. Innymi słowy szukamy optymalnego, poprawnego kolorowania grafu.
 
@@ -97,25 +96,29 @@ Wartością, do której przyrównujemy wszystkie obiczane sumy kolorowania może
 
 //TODO: wciąż nie wiem jak zdecydować, czy ten kolor jest zbyt duży, czy jeszcze nie. Należałoby 
 
-\section{Generowanie grafów - Model Erdos-Renyi}
+\section{Generowanie grafów}
+
+\subsection{Grafy losowe - Model Erdos-Renyi}
 
 \paragraph{} Model generowania grafów Erdos-Renyi to w rzeczywistości dwa bardzo do siebie podobne modele. 
 
-W pierwszym wariancie podajemy ilość wierzchołków $n$ oraz ilość krawędzi które mają znajdować się w grafie $M$. Rozmieszczenie krawędzie między wierzchołkami jest wybierane z prawdopodobieństwem liniowym spośród wszystkich możliwych grafów o takiej ilości krawędzi.
+W pierwszym wariancie podajemy ilość wierzchołków $n$ (w przypadku grafów dwudzielnych ilość wierzchołków w każdej z bipartycji $n_1$ oraz $n_2$) oraz ilość krawędzi które mają znajdować się w grafie $m$. Ilość wszystkich możliwych krawędzi w grafach dwudzielnych jest iloczynem bipartycji $n_1 * n_2$. Rozmieszczenie krawędzie między wierzchołkami jest wybierane z prawdopodobieństwem liniowym spośród wszystkich możliwych grafów o takiej ilości krawędzi.
 
-Drugi wariant polega na konstruowaniu grafu poprzez losowe łączenie wierzchołków. Każda krawędź między wierzchołkami jest generowana z prawdopodobieństwem $p$. Zależność między tym wariantem a poprzednim przejawia się tym, że każda krawędź z poprzedniego modelu jest generowana z prawdopodobieństwem $p^M(1-p)^{{n \choose 2}-M}$.
+Drugi wariant (nie użyty w tej pracy) polega na konstruowaniu grafu poprzez losowe łączenie wierzchołków. Każda krawędź między wierzchołkami jest generowana z prawdopodobieństwem $p$. Zależność między tym wariantem a poprzednim przejawia się tym, że każda krawędź z poprzedniego modelu jest generowana z prawdopodobieństwem $p^M(1-p)^{{n \choose 2}-M}$.
 
-Musimy dostosować model tak, by generował tylko grafy dwudzielne. W tym celu zamiast jednego parametru $n$ musimy podać ilość wierzchołków dla obu bipartycji, a krawędzie między losujemy tylko między wierzchołkami różnych bipartycji.
+Znając jedynie ilość wierzchołków w każdej z bipartycji, ilość wszystkich możliwych grafów wynosi: $k^{n_1+n_2}*2^{n_1*n_2}$, gdzie $k$ - ilość możliwych wartości wag wierzchołków. Dla $n_1=n_2=4$ oraz $k=4$ jest to $~4,3*10^9$
 
-\section{Testy algorytmów}
+\subsection{Wszystkie kombinacje krawędzi}
 
-\subsubsection{Stałe wagi wierzchołków}
+\paragraph{} Ilość krawędzi w grafie pełnym dwudzielnym wynosi $n_1 * n_2$ gdzie $n_1$ i $n_2$ są licznościami bipartycji. Układ krawędzi w grafie możemy więc zaprezentować poprzez wektor $0$ i $1$ o długości $n_1 * n_2$, gdzie $1$ oznacza że krawędź istnieje. Wszystkich takich wektorów jest $2^{n_1*n_2}$. Aby wygenerować wszystkie możliwe kombinacje krawędzi w grafie, należy najpierw przemapować $2^{n_1*n_2}$ kolejnych liczb na zero-jedynkowe wektory o długości $n_1 * n_2$, a następnie zamienić każdą z jedynek w wektorze na krawędź w grafie. 
 
-W teście tym sprawdzimy, jak dobrze algorytm przybliżony zachowuje się dla grafów o tej samej liczbie wierzchołków i wagach, ale o różnym ułożeniu krawędzi. w tym celu będziemy losować po $200$ grafów o gęstości $0.4, 0.5, 0.6, 0.7, 0.8 i 0.9$, za każdym razem sprawdzając, jak skuteczny okazał się algorytm 27/26 przybliżony.
+Zamiana indeksu na wektor odbywa się według wzoru $\frac{x}{2^{i}}\bmod 2$ , gdzie $x$ to nasz indeks, natomiast $i$ to indeks w wektorze, zakładając że wektor indeksujemy od $0$.
 
-\subsection*{Wzrost liczby wierzchołków}
+Zamiana jedynek z wektora na krawędzie w grafie jest trochę bardziej skomplikowana. Musimy pamiętać, że krawędzie mogą występować jedynie między wierzchołkami z różnych bipartycji. Jeżeli w wektorze znajduje się jedynka na pozycji $i$, oznacza to, że istnieje krawędź z wierzhołka $from$ z pierwszej bipartycji do wierzchołka $to$ w drugiej bipartycji. Sposób na znalezienie wierzchołka $from$ wyraża się wzorem $1 + i\bmod n_1$, natomiast wierzchołek $to$ znajdujemy wzorem $n_1 + \lceil{\frac{i}{n_2}}$.
 
-W tym teście będziemy sprawdzać jak zmienia się skuteczność algorytmu przybliżonego wraz z wzrostem ilości wierzchołków. W tym celu będziemy losować po $200$ grafów dla $n = 5,6,7,8,9,10,11,12$ wierzchołków. Wagi wierzchołków będziemy losować ze stałego zbioru $(24, 9, 2, 1)$
+\section{Testy}
+
+\
 
 \begin{thebibliography}{9}
 
