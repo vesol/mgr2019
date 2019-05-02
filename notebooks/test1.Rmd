@@ -101,16 +101,19 @@ saveRDS(df, file = paste0(path, 'data.rds'))
 df
 ```
 
-# !test0
+# analyse tests
 
 ```{r}
-file <- 'test0430/data.rds'
+file <- 'test1/0430/data.rds'
 df <- readRDS(file)
-df <- df %>% distinct()
 
-ratio <- df[df$ratio!=1,]
-test0 <- df[df$test0==FALSE,]
-ratio
+dfu <- df[,!(names(df)%in%c('index'))] %>% distinct()
+dfu
+
+df0 <- dfu[dfu$test0==FALSE,]
+df0
 table(test0$colors)
+df[df$ratio!=1,]
+
 ```
 ```

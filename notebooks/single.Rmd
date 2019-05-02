@@ -70,8 +70,8 @@ source("src/sum_coloring.R")
 source("src/27_26-approximate-coloring.R")
 source("src/brute_force.R")
 
-graph <- read.graph("test0427/169.graphml", "graphml")
-graph <- read.graph("graphs/bipartite.graphml", "graphml")
+graph <- read.graph("test2/0501/17.graphml", "graphml")
+# graph <- read.graph("graphs/bipartite.graphml", "graphml")
 # graph <- read.graph("test0426/5-1.graphml", "graphml")
 parts <- decompose(graph)
 sumA <- 0

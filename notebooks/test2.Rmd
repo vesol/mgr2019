@@ -1,0 +1,149 @@
+---
+title: "Tests"
+output: html_notebook
+---
+
+```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
+library(dplyr)
+
+source("src/3-pseudocoloring.R")
+source("src/2-coloring.R")
+source("src/is_colored_properly.R")
+source("src/sum_coloring.R")
+source("src/27_26-approximate-coloring.R")
+source("src/brute_force.R")
+source("src/test0.R")
+
+source('generators/all_edges.R')
+
+path <- 'test2/0501/'
+
+c <- c(1,2,3,4)
+
+if (!dir.exists(path))
+  dir.create(path)
+
+graph <- make_empty_graph(n = 8, directed = FALSE)
+V(graph)[1:4]$type <- FALSE
+V(graph)[5:8]$type <- TRUE
+V(graph)$name <- letters[1:8]
+V(graph)$weight <- c(1,2,6,24,1,2,6,24)
+
+Sys.time()
+tic()
+for(i in 1:2^16) {
+  g <- all_edges(graph, i)
+  write_graph(g, paste0(path, i , '.graphml'), "graphml")
+}
+toc()
+Sys.time()
+```
+
+```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
+library(dplyr)
+
+source("src/3-pseudocoloring.R")
+source("src/2-coloring.R")
+source("src/is_colored_properly.R")
+source("src/sum_coloring.R")
+source("src/27_26-approximate-coloring.R")
+source("src/brute_force.R")
+source("src/test0.R")
+
+source('generators/all_edges.R')
+
+path <- 'test2/0501/'
+
+df <- data.frame()
+
+Sys.time()
+tic()
+for(i in 1:2^16) {
+  if (i %% 1000 == 0) {
+    print(paste(i, '->', Sys.time()))
+  }
+  
+  g <- read_graph(paste0(path, i, '.graphml'), 'graphml')
+  
+  if(test0(g)) {
+    twoColoring <- two_coloring(g)
+    V(g)[twoColoring[[1]]]$color <- c[1]
+    V(g)[twoColoring[[2]]]$color <- c[2]
+    sum <- sum_coloring(g, c)
+    g$approximated <- sum
+    g$optimal <- sum
+  
+    df <- rbind(df, data.frame(list(
+      index = i, 
+      approximated = g$approximated, 
+      optimal = g$optimal, 
+      ratio = g$approximated / g$optimal, 
+      colors = length(unique(V(g)$color)), 
+      vertices = paste(V(g)$weight, collapse=','), 
+      degres = paste(degree(g), collapse = ','),
+      test0 = TRUE
+    )))
+  
+    write_graph(g, paste0(path, i , 'b.graphml'), "graphml")
+    saveRDS(df, paste0(path, '_data.rds'))
+    
+    next;
+  }
+  
+  parts <- decompose(g)
+  sumA <- 0
+  sumB <- 0
+
+  for(k in 1:length(parts)) {
+    resultA <- four_coloring(parts[[k]], c)
+    V(g)[V(resultA[[1]])$name]$color <- V(resultA[[1]])$color
+    sumA <- sumA + resultA[[2]]
+  }
+
+  resultB <- brute_force(g, c, sumA)
+  V(g)$color2 <- V(resultB[[1]])$color
+  sumB <- resultB[[2]]
+
+  g$approximated = sumA
+  g$optimal = sumB
+
+  df <- rbind(df, data.frame(list(
+    index = i, 
+    approximated = g$approximated, 
+    optimal = g$optimal, 
+    ratio = g$approximated / g$optimal,  
+    colors = length(unique(V(g)$color)), 
+    vertices = paste(V(g)$weight, collapse=','), 
+    degres = paste(degree(g), collapse = ','),
+    test0 = FALSE
+  )))
+
+  write_graph(g, paste0(path, i , 'b.graphml'), "graphml")
+  saveRDS(df, paste0(path, '_data.rds'))
+}
+toc()
+Sys.time()
+
+df
+```
+
+# !test0
+
+```{r}
+file <- paste0(path, '_data.rds')
+df <- readRDS(file)
+df <- df %>% distinct()
+
+df
+ratio <- df[df$ratio!=1,]
+test0 <- df[df$test0==FALSE,]
+ratio
+table(test0$colors)
+```
+```
