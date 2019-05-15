@@ -34,51 +34,51 @@ V(graph)[5:8]$type <- TRUE
 V(graph)$name <- letters[1:8]
 V(graph)$weight <- c(1,2,6,24,1,2,6,24)
 
-Sys.time()
 tic()
-for(i in 1:1000) {
+for(i in 1:2^16) {
+  if (i %% 1000 == 0) {
+    print(paste0(Sys.time(), ' -> ', i))
+  }
+  
   g <- all_edges(graph, i)
   write_graph(g, paste0(path, i , '.graphml'), "graphml")
   
-  if(test0(g)) {
+  t0 <- test0(g)
+  
+  if(t0$result) {
     twoColoring <- two_coloring(g)
     V(g)[twoColoring[[1]]]$color <- c[1]
     V(g)[twoColoring[[2]]]$color <- c[2]
-    sum <- sum_coloring(g, c)
+    sumA <- sum_coloring(g, c)
+    sumB <- sumA
+  } else {
+    parts <- decompose(g)
+    sumA <- 0
+    sumB <- 0
     
-    df <- rbind(df, data.frame(list(
-      index = i,
-      approximated = sum,
-      optimal = sum,
-      ratio = sum / sum,
-      colors = 2,
-      test0 = TRUE
-    )))
+    for(k in 1:length(parts)) {
+      resultA <- four_coloring(parts[[k]], c)
+      V(g)[V(resultA[[1]])$name]$color <- V(resultA[[1]])$color
+      sumA <- sumA + resultA[[2]]
+    }
     
-    next;
+    resultB <- brute_force(g, c, sumA)
+    V(g)$color2 <- V(resultB[[1]])$color
+    sumB <- resultB[[2]]
   }
-  
-  parts <- decompose(g)
-  sumA <- 0
-  sumB <- 0
-  
-  for(k in 1:length(parts)) {
-    resultA <- four_coloring(parts[[k]], c)
-    V(g)[V(resultA[[1]])$name]$color <- V(resultA[[1]])$color
-    sumA <- sumA + resultA[[2]]
-  }
-  
-  resultB <- brute_force(g, c, sumA)
-  V(g)$color2 <- V(resultB[[1]])$color
-  sumB <- resultB[[2]]
   
   df <- rbind(df, data.frame(list(
     index = i,
     approximated = sumA,
-    optimal = sumB,
     ratio = sumA / sumB,
     colors = length(unique(V(g)$color)),
-    test0 = FALSE
+    density = length(E(g)) / 16,
+    vertices = paste(V(g)$weight, collapse=','),
+    edges = paste0(as_ids(E(g)), collapse = ','),
+    test0 = t0$result,
+    hiss = t0$hiss,
+    vas = t0$vas,
+    vbs = t0$vbs
   )))
 }
 toc()
@@ -107,7 +107,7 @@ test <- 't2-0502'
 df <- readRDS(paste0('../graphs/', test, '/data.rds'))
 
 df0 <- dfu[dfu$test0==FALSE,]
-
+df0
 print('sifted by test0:')
 nrow(df) - nrow(df0)
 
@@ -118,7 +118,6 @@ print('approximated:')
 nrow(df0[df0$ratio!=1,])
 df0[df0$ratio!=1,]
 
-df0
 ```
 
 ```{r}

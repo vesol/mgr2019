@@ -7,8 +7,10 @@ test0 <- function (graph) {
   vbs <- sum(V(graph)[twoColoring[[2]]]$weight)
   
   if (hiss == vas || hiss == vbs) {
-    return(TRUE)
+    result = TRUE
+  } else {
+    result = FALSE
   }
   
-  return(FALSE)
+  return(list(hiss = hiss, vas = vas, vbs =vbs, result = result))
 }

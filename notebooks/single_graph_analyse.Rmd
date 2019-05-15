@@ -10,21 +10,49 @@ library(igraph)
 library(parallel)
 library(tictoc)
 
-source("src/3-pseudocoloring.R")
-source("src/2-coloring.R")
-source("src/is_colored_properly.R")
-source("src/sum_coloring.R")
-source("src/27_26-approximate-coloring.R")
-source("src/brute_force.R")
+source("../src/bipartite_two_coloring.R")
+source("../src/bipartite_three_pseudocoloring.R")
+source("../src/bipartite_four_coloring_approximated.R")
 
-c <- c(1,2,3,4)
-g <- read.graph("test0426/5-1.graphml", "graphml")
-V(g)$color <- 1
-
-plot(g, layout=layout_as_bipartite, main='input graph', vertex.size=40, vertex.label.cex=1, vertex.label = paste(V(g)$name, '/', V(g)$weight))
-
+g <- sample_bipartite(10, 10, type='gnp', 0.2)
+g <- read_graph('../graphs/bipartite6.graphml', 'graphml')
+# V(g)$weight <- 1
+colors <- c(1,2,3,4)
+bipartite_two_coloring(g, TRUE)
+bipartite_three_pseudocoloring(g, colors, TRUE)
+bipartite_four_coloring_approximated(g, colors, TRUE)
 ```
+```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
 
+source("../src/bipartite_two_coloring.R")
+source("../src/bipartite_three_pseudocoloring.R")
+
+g <- sample_bipartite(10, 10, type='gnp', 0.1)
+# g <- read_graph('../graphs/bipartite6.graphml', 'graphml')
+V(g)$weight <- 1
+colors <- c(1,2,2)
+
+g2 <- bipartite_two_coloring(g, TRUE)
+V(g)[g2$v1]$type <- TRUE
+V(g)[g2$v2]$type <- FALSE
+
+bipartite_three_pseudocoloring(g, colors, TRUE)
+```
+```{r}
+d <- c(0.001, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.05, 0.1, 0.15, 0.2)
+
+tic()
+for(i in 1:length(d)) {
+  for(j in 1:2) {
+    g <- sample_bipartite(100, 100, type = "gnp", p=d[i])
+    bipartite_three_pseudocoloring(g, c(1,2,2))
+  }
+}
+toc()
+```
 # Approximate algorithm
 
 ```{r}

@@ -1,0 +1,56 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
+library(dplyr)
+
+source('../src/2-coloring.R')
+source('../src/giaro-kubale.R')
+
+density <- c(0.001, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.05, 0.1, 0.15, 0.2)
+
+g <- sample_bipartite(100, 100, type='gnp', 0.02)
+
+# set <- bipartite_ivs(g)
+# set
+# plot(set)
+# tic('overall')
+# for(p in 1:2) {
+#   tic(paste0('p: ', density[p]))
+#   for (i in 1:1) {
+#     tic()
+#     g <- sample_bipartite(100, 100, type = "gnp", p=density[p])
+#     toc()
+#     tic()
+#     independence.number(g)
+#     toc()
+#   }
+#   toc()
+# }
+# toc()
+
+```
+
+```{r}
+tic('generate graph')
+g <- sample_bipartite(100, 100, type = "gnp", p=density[2])
+toc()
+tic('ivs')
+ivs_size(g)
+toc()
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.

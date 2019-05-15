@@ -28,33 +28,61 @@ Szeregowanie zadań kompatybilnych na maszynach jednorodnych.
 
 \subsection{Przykłady zastosowań}
 
-\paragraph{} Wyobraźmy sobie, że prowadzimy firmę transportową zajmującą się przewozem zwierząt. Danego dnia mamy do przewiezienia $n$ zwierząt, z czego każde jest mniej lub bardziej problematyczne, a co za tym idzie koszt jego przewiezienia jest droższy. Dodatkowo nie wszystkie zwierzęta można przewozić ze sobą, ponieważ, na przykład, kota nie można przewozić razem z psem, myszy ze słoniem, a węża z chomikiem. 
-Wszyscy nasi pracownicy otrzymują takie samo wynagrodzenie, płacone od godziny, ale różnią się między sobą umiejętnościami i sprawnością, więc wykonują swoją pracę w różnym tempie. W jaki sposób możemy zminimalizować nasz koszt, przydzielając najbardziej sprawnych pracowników do zwierząt, których transport będzie kosztował najwięcej? W tym przykładzie wierzchołkami są zwierzęta z wagami odzwierciedlającymi koszty transportu. Krawędzie w grafie odpowiadajć zwierzętom, które nie mogą być w jednym transporcie. Kolorowaniem takiego grafu będzie przyporządkowanie pracowników.
+\paragraph{} Wyobraźmy sobie, że prowadzimy firmę transportową zajmującą się przewozem zwierząt. Danego dnia mamy do przewiezienia $n$ zwierząt. Każde ze zwierząt trzeba przewieźć na inną odległość, każde jest mniej lub bardziej problematyczne, a co za tym idzie jego rozładunek trwa dłużej lub krócej. Na potrzeby tego przykładu istotne jest, że czas potrzebny na każde zwierzę jest inny i koszt jego przewiezienia jest proporcjonalny do czasu. Dodatkowo niektóre ze zwierząt są ze sobą w konflikcie, i nie można ich przewozić razem (ani nawet jednym środkiem transportu). Na przykład, kota nie można przewozić razem z psem, myszy ze słoniem, a węża z chomikiem. Do dyspozycji mamy kilka środków transportu, każdy z nich inny. Różnią się między sobą zapotrzebowaniem na paliwo, czasem transportu oraz kosztami obsługi. Dla firmy istotne jest to, że każdy środek transportu generuje inne koszty w stałej jednostce czasu. Naszym zadaniem jest zminimalizowanie kosztu. By to osiągnąć, możemy zamodelować czas przewozu zwierzęcia jako wagę wierzchołka,  konflikty między nimi jako krawędzię między wierzchołkami. Różne środki transportu będą reprezentowane przez różne kolory, a ich wagi to koszty pracy w jednostce czasu. Rozwiązaniem problemu będzie takie przyporządkowanie wierzchołków do kolorów (zwierząt do środków transportu), żeby żadne dwa połączone krawędzią wierzchołki nie miały tego samego koloru, a suma kosztów wierzchołków i kolorów była jak najmniejsza.
 
-Innym przykładem będzie organizacja warsztatów na dużej, międzynajodowej konferencji. W ramach warsztatów mamy za zadanie zorganizować $n$ szkoleń, na każde zapisało się (i opłaciło udział) już wielu uczestników. Godziny szkoleń mogą się na siebie nakładać. Im więcej osób zapisało się na warsztat, tym koszt poprowadzenia takiego warszatu jest droższy, ponieważ trzeba zapewnić odpowiednie akcesoria do wykonania ćwiczeń oraz zapewnić odpowiednio dużą salę, co wiąże się z odpowiednio wysokim kosztem. Mamy do dyspozycji kilka sal, każda o innym koszcie (każda jest w stanie pomieścić uczestników największego szkolenia). Jak rozmieścić szkolenia w salach, tak by zminimalizować koszt?
+Innym przykładem będzie układanie harmonogramów sal operacyjnych w szpitalach. Mamy do przeprowadzenia $n$ zabiegów, każdy o innej złożoności i innym stopniu skomplikowania (a co za tym idzie wymagający innej ilości czasu). Niektóre zabiegi są ze sobą w konflikcie, ponieważ, np. wymagają obecności tego samego lekarza, lub wymagają użycia tej samej aparatury, a szpital ma ograniczone zasoby. Wykonywanie zabiegów o różnych porach niesie ze sobą takie konsekwencje, że koszty zużycia energii elektrycznej są różne. Do tego, koszt personelu jest różny, w zależności od tego czy są to nadgodziny, dzień wolny od pracy, czy normalne godziny robocze. Naszym zadaniem, jako osoby odpowiedzialnej za układanie grafiku jest zminimalizowanie kosztu zabiegów, z jednoczesnym zachowaniem restrykcji dotyczących niemożliwości wykonywania zabiegów w tym samym czasie. W tym celu modelujemy zabiegi jako wierzchołki i czas na ich wykonanie jako wagi. To, że dwa zabiegi nie mogą się odbyć w tym samym czasie reprezentuje krawędź między wierzchołkami. Kolory oznaczają okna czasowe, w których można wykonywać zabiegi, z przypisanymi kosztami oznaczającymi koszt trwania zabiegu w jednostce czasu.
 
 \section{Algorytmy kolorowania grafów ważonych}
 
 Aby przejść do rozwiązywania problemu kosztowego kolorowania grafów ważonych musimy zacząć od kilku definicji formalnych. 
 
-
-I tak, mając graf ważony $G_w = (V,E,w)$, gdzie $V$ to zbiór wierzchołków, $E$ to zbiór krawędzi, natomiast $w$ to wagi wierzchołków takie, że  $w:V \rightarrow R_+$ oraz palete (zestaw) kolorów $C = (c_1, c_2, ..)$ taką że $\forall c_i \in N_+$ staramy się znaleźć takie przyporządkowanie kolorów do wierzchołków, by zminimalizować sumę iloczynów wag w grafie $\sum w_i * c_i = min$ oraz by żadne dwa wierzchołki mające wspólną krawędź nie miały tego samego koloru. Innymi słowy szukamy optymalnego, poprawnego kolorowania grafu.
+I tak, mając graf ważony $G_w = (V,E,w)$, gdzie $V$ to zbiór wierzchołków, $E$ to zbiór krawędzi, natomiast $w$ to wagi wierzchołków takie, że  $w:V \rightarrow R_+$ oraz palete (zestaw) kolorów $C = (c_1, c_2, ..)$ taką że $\forall c_i \in N_+$ staramy się znaleźć takie przyporządkowanie kolorów do wierzchołków, by zminimalizować sumę iloczynów wag wierzchołków i wag kolorów w grafie $\sum w_i * c_i = min$. Warunkiem, by kolorowanie było poprawne, jest to, aby żadne dwa wierzchołki mające wspólną krawędź nie miały tego samego koloru. Innymi słowy szukamy takiego poprawnego kolorowania , dla którego suma kosztownego kolorowania jest najmniejsza.
 
 Problem kosztowego kolorowania grafów ważonych jest problemem optymalizacyjnym, NP-trudnym. Z racji na złożoność problemu, w tej pracy zajmiemy się tylko grafami dwudzielnymi oraz weźmiemy pod uwagę tylko palety składające się z co najwyżej 4 kolorów.
 
-\subsection{Algorytm przybliżony}
+\subsection{Najcięższy zbiór niezależny}
+
+\paragraph{} Biorąc pod uwagę, źe rozpatrujemy tylko grafy dwudzielne, warto zauważyć, że jeśli cięższa z bipartycji (ta o większej sumie wag wierzchołków) jest równa najcięższemu zbiorowi niezależnemu, to optymalnym rozwiązaniem będzie dwukolorowanie, i nie ma sensu szukać dalszych rozwiązań. Najlżejszym kolorem kolorujemy wtedy najcięższy zbiór niezależny, a drugim najlżejszym pozostałe wierzchołki.
+
+Najciężysz zbiór niezależny wyznaczamy algorytmem 3-pseudokolorowania, pierwszy zbiór zwrócony przez ten algorytm jest najcięższym zbiorem niezależnym.
 
 \subsubsection*{3-pseudo kolorowanie}
 
-K-pseudokolorowaniem grafu nazywamy każde poprawne kolorowanie $k-1$ kolorami lub kolorowanie $k$ kolorami takie, że wierzchołki pokolorowane ostatnim kolorem mogą nie być niezależne, tzn. wierzchołki pokolorowane ostatnim kolorem mogą być połączone krawędziami między sobą. 
+\paragraph{} K-pseudokolorowaniem grafu nazywamy każde poprawne kolorowanie $k-1$ kolorami lub kolorowanie $k$ kolorami takie, że wierzchołki pokolorowane ostatnim kolorem mogą nie być niezależne, tzn. wierzchołki pokolorowane ostatnim kolorem mogą być połączone krawędziami między sobą. 
 
 Minimalne k-pseudokolorowanie polega na takim dobraniu kolorów, by spełnione były warunki k-pseudokolorowania oraz suma iloczynów wag wierzchołków i wag kolorów była jak najmniejsza.
 
-Algorytm polega na zbudowaniu grafu skierowanego na podstawie grafu wejściowego i wyliczeniu przecięcia S-T. W ten sposób utworzone zbiory wierzchołków, po drobnych przekształceniach, definiują 3 kolory jakimi należy pokolorować graf by otrzymać 3-pseudokolorowanie. Algorytm został znakomicie opisany w \cite{kubale-pikies19}.
+Algorytm polega na zbudowaniu grafu skierowanego na podstawie grafu wejściowego i wyliczeniu przecięcia S-T. W ten sposób utworzone zbiory wierzchołków, po drobnych przekształceniach, definiują 3 kolory jakimi należy pokolorować graf by otrzymać 3-pseudokolorowanie. Algorytm został znakomicie opisany w pracy dotyczącej kosztowego kolorowania grafów ważonych \cite{kubale-pikies19}.
 
-\subsubsection*{27/26-przybliżony}
+Minimalne przecięcie S-T liczymy z algorytmu $maximum flow$ przedstawionego wpracy
 
-Algorytm 27/26-przybliżony działa w czasie $O(nm)$, ale nie gwarantuje nam znalezienia optymalnego rozwiązania. Mamy jednak pewność, że znalezione rozwiązanie nie będzie gorsze niż 27/26 rozwiązania optymalnego. 
+\subsection{Algorytm optymalny}
+
+\paragraph{} Algorytm optymalny opiera się na metodzie siłowej, gdzie generujemy wszystkie możliwe sekwencje kolorów dla danego grafu. Ilość wszystkich kombinacji wynosi $k^n$, gdzie $n$ to ilość wierzchołków grafu, a $k$ to ilość możliwych kolorów do wyboru. Sposób przypisania koloru do danego wierzchołka sekwencji definiuje wzór $c = (x / k^{i}) \bmod k$, gdzie $c$ to index koloru, $i$ to index wierzchołka w grafie (poczynając od zera), $x$ to numer danej sekwencji a $k$ ilość dostępnych kolorów w palecie. 
+
+Dla każdej wygenerowanej kombinacji musimy wykonać dwa obliczenia. Należy zweryfikować, czy dana kombinacja jest poprawnym kolorowaniem, oraz obliczyć sumę kolorowania, by można było wybrać najlepszy wynik.
+
+Sposób na obliczenie sumy kosztowej został już przedstawiony wcześniej w tej pracy. Sprawdzenie, czy kolorowanie jest poprawne czy nie jest banalne i polega na odwiedzeniu wszystkich wierzchołków w dowolnej kolejności oraz sprawdzeniu, czy dany wierzchołek nie ma sąsiada w tym samym kolorze co on. W celu optymalizacji, można sprawdzać wierzchołki w kolejności malejącej biorąc pod uwagę stopień wierzchołka.
+
+\subsubsection*{Zrównoleglenie}
+
+\paragraph{} Algorytm możemy podzielić na sekwencje trzech kroków, W pierwszym kroku generujemy wszystkie możliwe kombinacje kolorów, następnie wykonujemy obliczenia dla każdej z kombinacji a na końcu musimy zebrać wszystkie wyniki cząstkowe i wybrać najlepszy z nich (kombinacje, dla której suma kolorowania jest najmniejsza). Całość obliczeń (poza porównywaniem wyników cząstkowych) można zrównoleglić, obliczając każdą sekwencję kolorów niezależnie, na osobnych wątkach.
+
+\subsubsection*{Ignorowanie kombinacji o dużych sumach}
+
+\paragraph{} Na każdej wygenerowanej kombincaji kolorów musimy wykonać dwa obliczenia: policzenie sumy kolorowania oraz zweryfikowanie, czy otrzymana kombinacja kolorów jest kolorowaniem poprawnym. Możemy zredukować ilość obliczeń zmieniając ich kolejność. Obliczając najpierw sumę kolorowania i odrzucając sumy, które są większe równe od jakiejś zadanej wartości, nie musimy sprawdzać poprawności kolorownia wszystkich kombinacji, lecz tylko tych które dają sume kolorowania mniejszą od zadanej.
+
+Wartością, do której przyrównujemy wszystkie obiczane sumy kolorowania może być np. wynik algorytmu przybliżonego, który również został opisany w tej pracy.
+
+\subsubsection*{Odrzucenie kolorów o znacznie większych wagach}
+
+\paragraph{} W szczególnyh przypadkach, gdy mamy do czynienia z kolorami, których wagi różnią się między sobą znacznie, nie ma sensu generować wszystkich możliwych kombinacji pokolorowań. Mamy do czynienia z grafem dwudzielnym, więc minimalna ilość kolorów wynosi 2. Jednakże, jeśli waga koloru trzeciego lub kolorów trzeciego i czwartego jest znacząco wyższa od wagi koloru drugiego jest duża szansa, że można te kolory pominąć w generowaniu możliwych kombinacji, i zamiast $k^n$ kombinacji do przeliczenia mamy jedynie $(k-1)^n$ lub $(k-2)^n$
+
+Jeśli waga 3 lub 4 koloru jest większa bądź równa największemu zbiorowi niezależnemu w grafie, oznacza to, że ten kolor nie będzie nigdy użyty i można zredukować ilość przeszukiwanych rozwiązań.
+
+\subsection{Algorytm przybliżony 27/26-przybliżony}
+
+\paragraph{} Algorytm 27/26-przybliżony działa w czasie $O(nm)$, ale nie gwarantuje nam znalezienia optymalnego rozwiązania. Mamy jednak pewność, że znalezione rozwiązanie nie będzie gorsze niż 27/26 rozwiązania optymalnego. 
 
 Pierwszym krokiem jest wyznaczenie zbiorów kolorów $V1$, $V2$ oraz $V3$ poprzez algorytm minimalnego 3-pseudokolorowania. Następnie kolorujemy graf optymalnie kolorami $C1$ oraz $C2$ i obliczamy sumę kolorowania, oznaczamy ją $S1$. 
 
@@ -62,39 +90,7 @@ Kolejnym krokiem jest pokolorowanie kolorem $C1$ wierzchołków $V1$ które otrz
 
 Następnie kolorujemy $V1$ kolorem $C1$, $V2$ kolorem $C2$, a pozostałe wierzchołki kolorujemy optymalnie $C3$ oraz $C4$ i takie pokolorowanie oznaczamy jako $S3$.
 
-Najlepsze z pokolorowań $S1$, $S2$ oraz $S3$ (kryterium jest minimum sumy kolorowania) jest naszym rozwiązaniem. Co więcej, jest rozwiązaniem nie gorszym niż 27/26 rozwiązania optymalnego jak zostało dowiedzione w \cite{kubale-pikies19}.
-
-\subsubsection*{Wstępna selekcja grafów łatwych}
-
-Grafy banalne do wyliczenia optymalnego wyniku możemy łatwo zidentyfikować już na początku algorytmu. W takich przypadkach optymalne rozwiązanie uzyskujemy już w pierwszym kroku algoytmu imamy pewność że kolejne kroki nie polepszą wyniku, więc algorytm można przerwać wcześniej.
-
-By to osiągnąć, po obliczeniu optymalnego kolorowania dwoma kolorami należy obliczyć najcięższy zbiór niezależny. Jeśli suma wag wierzchołków wyznaczonych przez ten zbiór, oraz suma wag wyznaczonych przez któryś z kolorów z dwukolorowania są sobie równe, oznacza to że osiągneliśmy wynik optymalny.
-
-\subsection{Algorytm optymalny}
-
-\paragraph{} Algorytm optymalny opiera się na metodzie siłowej, gdzie generujemy wszystkie możliwe sekwencje kolorów dla danego grafu. Ilość wszystkich kombinacji wynosi $n^k$, gdzie $n$ to ilość wierzchołków grafu, a $k$ to ilość różnych kolorów - w naszym przypadku 4. Sposób przypisania kolorów do wierzchołków w danej sekwencji definiuje wzór $c = (x / k^{i-1}) \bmod k$, gdzie $c$ to index koloru, $i$ to index wierzchołka w grafie, $x$ to numer danej sekwencji a $k$ ilość dostępnych kolorów w palecie. 
-
-Dla każdej wygenerowanej kombinacji musimy wykonać dwa obliczenia. Należy zweryfikować, czy dana kombinacja jest poprawnym kolorowaniem, oraz obliczyć sumę kolorowania, by można było wybrać najlepszy wynik.
-
-Sprawdzenie, czy kolorowanie jest poprawne czy nie jest banalne i polega na odwiedzeniu wszystkich wierzchołków w dowolnej kolejności oraz sprawdzeniu, czy dany wierzchołek nie ma sąsiada w tym samym kolorze co on. W celu optymalizacji, można sprawdzać wierzchołki w kolejności malejącej biorąc pod uwagę stopień wierzchołka.
-
-\subsubsection*{Zrównoleglenie}
-
-\paragraph{} Algorytm możemy podzielić na sekwencje trzech kroków, W pierwszym kroku generujemy wszystkie możliwe kombinacje kolorów, następnie wykonujemy obliczenia dla każdej z kombinacji a na końcu musimy wybrać najlepszą wynik (kombinacje, dla której suma kolorowania jest najmniejsza).
-
-Algorytm jest stosunkowo łatwy do zrównoleglenia, ponieważ pierwsza i ostatnia faza są proste obliczeniowo, natomiast w przypadku fazy środkowej (najbardziej wymagającej obliczeniowo) obliczenia możemy wykonywać równolegle, każdą z kombinacji liczyć niezależnie.
-
-\subsubsection*{Odrzucanie rozwiązań które dają sumę większą zadanej wartości}
-
-\paragraph{} Na każdej wygenerowanej kombincaji kolorów musimy wykonać dwa obliczenia: policzenie sumy kolorowania oraz zweryfikowanie, czy otrzymana kombinacja kolorów jest kolorowaniem poprawnym. Możemy zredukować ilość obliczeń, najpierw obliczając sumę kolorowania i odrzucając sumy, które są większe równe od jakiejś zadanej wartości. W ten sposób nie musimy sprawdzać poprawności kolorownia wszystkich kombinacji, lecz tylko tych które dają sume kolorowania mniejszą od zadanej.
-
-Wartością, do której przyrównujemy wszystkie obiczane sumy kolorowania może być np. wynik algorytmu przybliżonego, który również został opisany w tej pracy.
-
-\subsubsection*{Odrzucenie kolorów o znacznie większych wagach}
-
-\paragraph{} W szczególnyh przypadkach, gdy mamy do czynienia z kolorami, których wagi różnią się między sobą znacznie, nie ma sensu generować wszystkich możliwych kombinacji pokolorowań. Mamy do czynienia z grafem dwudzielny, więc minimalna ilość kolorów wynosi 2. Jednakże, jeśli waga koloru trzeciego lub kolorów trzeciego i czwartego jest znacząco wyższa od wagi koloru drugiego jest duża szansa, że można te kolory pominąć w generowaniu możliwych kombinacji, i zamiast $k^n$ kombinacji do przeliczenia mamy jedynie $(k-1)^n$ lub $(k-2)^n$
-
-//TODO: wciąż nie wiem jak zdecydować, czy ten kolor jest zbyt duży, czy jeszcze nie. Należałoby 
+Najlepsze z pokolorowań $S1$, $S2$ oraz $S3$ (kryterium jest minimum sumy kolorowania) jest naszym rozwiązaniem. Co więcej, jest rozwiązaniem nie gorszym niż 27/26 rozwiązania optymalnego jak zostało dowiedzione w pracy \cite{kubale-pikies19}.
 
 \section{Generowanie grafów}
 
@@ -108,7 +104,7 @@ Drugi wariant (nie użyty w tej pracy) polega na konstruowaniu grafu poprzez los
 
 Znając jedynie ilość wierzchołków w każdej z bipartycji, ilość wszystkich możliwych grafów wynosi: $k^{n_1+n_2}*2^{n_1*n_2}$, gdzie $k$ - ilość możliwych wartości wag wierzchołków. Dla $n_1=n_2=4$ oraz $k=4$ jest to $~4,3*10^9$
 
-\subsection{Wszystkie kombinacje krawędzi}
+\subsection{Wszystkie kombinacje krawędzi w grafie}
 
 \paragraph{} Ilość krawędzi w grafie pełnym dwudzielnym wynosi $n_1 * n_2$ gdzie $n_1$ i $n_2$ są licznościami bipartycji. Układ krawędzi w grafie możemy więc zaprezentować poprzez wektor $0$ i $1$ o długości $n_1 * n_2$, gdzie $1$ oznacza że krawędź istnieje. Wszystkich takich wektorów jest $2^{n_1*n_2}$. Aby wygenerować wszystkie możliwe kombinacje krawędzi w grafie, należy najpierw przemapować $2^{n_1*n_2}$ kolejnych liczb na zero-jedynkowe wektory o długości $n_1 * n_2$, a następnie zamienić każdą z jedynek w wektorze na krawędź w grafie. 
 
@@ -118,7 +114,55 @@ Zamiana jedynek z wektora na krawędzie w grafie jest trochę bardziej skompliko
 
 \section{Testy}
 
-\
+\subsection{Grafy losowe o 8 wierzchołkach}
+
+\paragraph{} Pierwszym testem będzie sprawdzenie, jak algorytm działa dla dużej ilości losowych grafów. By rozwiązywany problem nie był umiejscowiony w próżni, postarajam się rozwiązać problem układania harmonogramów dla organizacji przygotowującej szkolenia, zaproponowany w pracy \cite{kubale-pikies19}. Mamy do dyspozycji 8 kursów $n$, wagi kursów zawierają się w przedziale $(10,15)$. Dla tak zdefiniowanych warunków, mamy $6^8$ kombinacji wag wierzchołków oraz $2^{4*4}$ kombinacji krawędzi. Daje to nam $~1,1*10^{11}$ możliwych grafów.
+
+Taka ilość grafów jest niemożliwa do przeliczenia, postanowiłem więc przeprowadzić test na próbce $2^15$ wylosowanych grafów.
+
+Sposób losowania grafów polegał na wylosowaniu wag wierzchołków, a następnie wylosowaniu ilości krawędzi między wierzchołkami (między 3 a 15, ponieważ nie interesują nas grafy pełne, bo wiemy że optymalnym kolorowaniem będzie dwukolorowania, tak samo jak w przypadku grafów pustych albo takich o 1 lub 2 krawędziach). Gdy mamy wylosowaną ilość krawędzi, wystarczy zastosować model Erdos-Renyi by wygenerować losowy graf.
+
+Dla próbki $32768$ grafów obliczenia trwały $13,5h$. Jedynie $3$ z wygenerowanych grafów okazały się duplikatami. Aż $22142 (67,57\%)$ grafów zostało odsianych przez test sprawdzający najcięższy zbiór niezależny. Z pozostałych grafów ($10623$) optymalnm kolorowaniem było 2-kolorowanie dla $8981 (84,54\%)$, natomiast trzech kolorów trzeba było użyć w przypadku $1642 (15,46\%)$. Ani w jednym przypadku nie zdażyło się, że algorytm przybliżony nie zwrócił rozwiązania optymalnego albo że trzeba było użyć 4 kolorów.
+
+Na przykładzie tego testu można wysnuć ostrożny wniosek, że algorytm przybliżony działa bardzo dobrze, jeśli różnice wag wierzchołków są niewielkie. Postaram się tego dowieść w następnych testach.
+
+\subsection{Wszystkie możliwe kombinacje krawędzi w grafie}
+
+\paragraph{} Z artykułu dotyczącym kosztowego kolorowania grafów \cite{kubale-pikies19} znamy graf, do którego optymalnego pokolorowania potrzeba 4 kolorów. Sprawdźmy, jak liczny jest zbiór grafów o dokładnie takich wierzchołkach. Dla jakich układów krawędzi ilu kolorów potrzeba, by pokolorować go optymalnie i jak zachowuje się algorytm przybliżony dla ej rodziny grfów. Liczność zbioru grafów o dokłądnie takich wierzchołkach wynosi $2^{16}$.
+
+TODO: Te obliczenia wciąż trwają.
+
+\subsection{Zmiana wag wierzchołków dla konkretnych grafów}
+
+TODO: tutaj planuję wziąć grafy, które wyszły jako przybliżone w poprzednim teście (lub wszystkie, do których użyto >2 kolorów) i sprawdzić jak się będą zachowywały jeśli będę zmieniał wagi wierzchołków: (1,2,3,4), (1,2,3,5), (1,2,3,10), (1,5,10,15), (1,2,9,24), (1,2,6,24), (1,2,10,100), 
+
+\subsection{Zmiana ilości wierzchołków}
+
+Wg genga z nautego ilość grafów dwudzielnych nieizomorficznych wynosi dla n=:
+
+4  - 7
+
+5  - 13
+
+6  - 35
+
+7  - 88
+
+8  - 303
+
+9  - 1119
+
+10 - 5479
+
+11 - 32303
+
+12 - 251135
+
+13 - 2527712
+
+14 - 33985853
+
+Pytanie, jak dobrać wagi?
 
 \begin{thebibliography}{9}
 
@@ -126,6 +170,11 @@ Zamiana jedynek z wektora na krawędzie w grafie jest trochę bardziej skompliko
 Tytus Pikies, Marek Kubale,
 \emph{Cost coloring of weighted bipartite graphs}
 (2019)
+
+\bibitem{McKay201494} 
+McKay, B.D. and Piperno, A., 
+\emph{Practical Graph Isomorphism, II, Journal of Symbolic Computation, 60 (2014)}, 
+pp. 94-112, http://dx.doi.org/10.1016/j.jsc 2013.09.00
 
 \bibitem{igraph-r}
 \emph{https://igraph.org/r/doc/}

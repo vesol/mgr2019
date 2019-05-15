@@ -1,13 +1,12 @@
-two_coloring <- function(graph, debug = FALSE){
+bipartite_two_coloring <- function(graph, debug = FALSE){
   g <- graph
   x <- dfs(g, V(g)[1])
   va <- c()
   vb <- c()
   
   for(i in 1:length(x$order)) {
-    v <- x$order[i]
-    name <- v$name
-    nb <- neighborhood(graph, 1, name)[[1]]$name
+    name <- as_ids(x$order[i])
+    nb <- as_ids(neighborhood(g, 1, name)[[1]])
     others <- nb[nb != name]
     
     if (name %in% va) {
@@ -22,7 +21,7 @@ two_coloring <- function(graph, debug = FALSE){
       vb <- unique(c(vb, others))
     }
     
-    if (sum(V(graph)[va]$weight) < sum(V(graph)[vb]$weight)) {
+    if (sum(V(g)[va]$weight) < sum(V(g)[vb]$weight)) {
       tmpA <- va
       tmpB <- vb
       va <- tmpB
@@ -36,10 +35,10 @@ two_coloring <- function(graph, debug = FALSE){
   }
   
   if (debug) {
-    V(g)[name %in% va]$color <- 1
-    V(g)[name %in% vb]$color <- 2
-    plot(g, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main='2-coloring', vertex.label = paste0(V(g)$name, '/', V(g)$weight, '/', V(g)$color))
+    V(g)[va]$color <- 1
+    V(g)[vb]$color <- 2
+    plot(g, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main='2-coloring', vertex.label = paste0(as_ids(V(g))))
   }
   
-  return(list(va, vb))
+  return(list(v1 = va, v2 = vb, v1sum = sum(V(g)[va]$weight), v2Sum = sum(V(g)[vb]$weight)))
 }

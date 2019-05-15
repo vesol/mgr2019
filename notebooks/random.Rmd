@@ -19,7 +19,7 @@ source("../src/test0.R")
 
 source("../generators/random_weights_and_edges.R")
 
-test <- 't1-0502'
+test <- 't1-0503'
 path <- paste0('../graphs/', test, '/')
 
 if (!dir.exists(path))
@@ -27,63 +27,58 @@ if (!dir.exists(path))
 
 df <- data.frame()
 
-Sys.time()
 tic()
-for(i in 1:60000) {
+for(i in 1:2^15) {
+  if (i %% 1000 == 0) {
+    print(paste0(Sys.time(), ' -> ', i))
+  }
+  
   g <- random_weights_and_edges(n1 = 4, n2 = 4, weights = seq(10:15))
   write_graph(g, paste0(path, i, '.graphml'), 'graphml')
   
-  if(test0(g)) {
+  t0 <- test0(g)
+  
+  if(t0$result) {
     twoColoring <- two_coloring(g)
     V(g)[twoColoring[[1]]]$color <- c[1]
     V(g)[twoColoring[[2]]]$color <- c[2]
-    sum <- sum_coloring(g, c)
+    sumA <- sum_coloring(g, c)
+    sumB <- sumA
+  } else {
+    parts <- decompose(g)
+    sumA <- 0
+    sumB <- 0
     
-    df <- rbind(df, data.frame(list(
-      index = i,
-      approximated = sum,
-      optimal = sum,
-      ratio = sum / sum,
-      colors = 2,
-      edges = length(E(g)) / 16,
-      vertices = paste(V(g)$weight, collapse=','),
-      degres = paste(degree(g), collapse = ','),
-      test0 = TRUE
-    )))
+    for(k in 1:length(parts)) {
+      resultA <- four_coloring(parts[[k]], c)
+      V(g)[V(resultA[[1]])$name]$color <- V(resultA[[1]])$color
+      sumA <- sumA + resultA[[2]]
+    }
     
-    next;
+    resultB <- brute_force(g, c, sumA)
+    V(g)$color2 <- V(resultB[[1]])$color
+    sumB <- resultB[[2]]
   }
-  
-  parts <- decompose(g)
-  sumA <- 0
-  sumB <- 0
-  
-  for(k in 1:length(parts)) {
-    resultA <- four_coloring(parts[[k]], c)
-    V(g)[V(resultA[[1]])$name]$color <- V(resultA[[1]])$color
-    sumA <- sumA + resultA[[2]]
-  }
-  
-  resultB <- brute_force(g, c, sumA)
-  V(g)$color2 <- V(resultB[[1]])$color
-  sumB <- resultB[[2]]
   
   df <- rbind(df, data.frame(list(
     index = i,
     approximated = sumA,
-    optimal = sumB,
     ratio = sumA / sumB,
     colors = length(unique(V(g)$color)),
-    edges = length(E(g)) / 16,
+    density = length(E(g)) / 16,
     vertices = paste(V(g)$weight, collapse=','),
-    degres = paste(degree(g), collapse = ','),
-    test0 = FALSE
+    edges = paste0(as_ids(E(g)), collapse = ','),
+    test0 = t0$result,
+    hiss = t0$hiss,
+    vas = t0$vas,
+    vbs = t0$vbs
   )))
 }
 toc()
 Sys.time()
 
 saveRDS(df, paste0(path, 'data.rds'))
+df
 ```
 
 # analyse tests
