@@ -39,19 +39,52 @@ g2 <- bipartite_two_coloring(g, TRUE)
 V(g)[g2$v1]$type <- TRUE
 V(g)[g2$v2]$type <- FALSE
 
-bipartite_three_pseudocoloring(g, colors, TRUE)
+g3 <- bipartite_three_pseudocoloring(g, colors, TRUE)
+V(g)[g3$v1]$type = FALSE
+V(g)[!g3$v1]$type = TRUE
+
 ```
 ```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
+
+source("../src/bipartite_two_coloring.R")
+source("../src/bipartite_three_pseudocoloring.R")
+
 d <- c(0.001, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.05, 0.1, 0.15, 0.2)
 
-tic()
+df <- data.frame()
+tic('overall')
 for(i in 1:length(d)) {
-  for(j in 1:2) {
+  tic(d[i])
+  for(j in 1:100) {
     g <- sample_bipartite(100, 100, type = "gnp", p=d[i])
-    bipartite_three_pseudocoloring(g, c(1,2,2))
+    g2 <- bipartite_two_coloring(g)
+    
+    df <- rbind(df, data.frame(list(
+      density = d[i],
+      v1 = length(g2$v1),
+      v2 = length(g2$v2),
+      partition_factor =  length(g2$v2) / length(g2$v1),
+      m = length(E(g))
+    )))
   }
+  
+  toc()
 }
 toc()
+
+df
+```
+```{r}
+library(ggplot2)
+
+head(df)
+
+ggplot(df, aes(x=as.factor(density), y=partition_factor)) + 
+  geom_boxplot(fill="slateblue", alpha=0.3) +
+  xlab("density")
 ```
 # Approximate algorithm
 

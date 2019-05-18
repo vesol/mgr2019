@@ -6,6 +6,10 @@ bipartite_three_pseudocoloring <- function(graph, colors, debug = FALSE) {
   Va <- V(g)[twoColoring$v1]
   Vb <- V(g)[twoColoring$v2]
   
+  if (length(Vb) == 0) {
+    return(list(v1=Va, v2=c(), v3=c()))
+  }
+  
   if(length(colors) == 2 || colors[1] == colors[2]) {
     if (debug) {
       V(g)[Va]$color <- colors[1]
@@ -77,9 +81,9 @@ bipartite_three_pseudocoloring <- function(graph, colors, debug = FALSE) {
 
   if (debug) {
     V(g)[V1]$color <- colors[1]
-    V(g)[V2]$color <- colors[2]
-    V(g)[V3]$color <- colors[3]
-    plot(g, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main='3-pseudocoloring', vertex.label = paste0(as_ids(V(g))))
+    V(g)[V2]$color <- 2
+    V(g)[V3]$color <- 3
+    plot(g, layout=layout_as_bipartite, palette=diverging_pal(4), vertex.size=40, vertex.label.cex=1, main='3-pseudocoloring', vertex.label = as_ids(V(g)), vertex.color = V(g)$color)
   }
 
   return (list(v1 = V1, v2 = V2, v3 = V3))

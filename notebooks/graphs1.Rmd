@@ -11,6 +11,93 @@ Try executing this chunk by clicking the *Run* button within the chunk or by pla
 library(igraph)
 library(parallel)
 library(tictoc)
+library(ggplot2)
+library(dplyr)
+
+source("../src/bipartite_two_coloring.R")
+source("../src/bipartite_three_pseudocoloring.R")
+
+density <- c(0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.05, 0.1, 0.15, 0.2)
+probe = 10
+# n = c(10,20,50,100,150)
+n = c(10, 20, 50, 100, 150, 200, 500, 1000)
+
+filename <- paste0('../tests/test2-', probe)
+
+df <- data.frame()
+tic('overall')
+for(i in 1:length(n)) {
+  tic(n[i])
+  for(j in 1:length(density)) {
+    for(k in 1:probe) {
+      g <- sample_bipartite(n[i], n[i], type = "gnp", p=density[j])
+      g2 <- bipartite_two_coloring(g)
+      # g3 <- bipartite_three_pseudocoloring(g, c(1,2,2))
+      
+      v1 <- length(g2$v1)
+      v2 <- length(g2$v2)
+      # vg <- length(g3$v1)
+      
+      df <- rbind(df, data.frame(list(
+        density = density[j],
+        n = n[i],
+        # vg = vg,
+        v1 = v1,
+        v2 = v2
+      )))
+    }
+  }
+  toc()
+  print(Sys.time())
+}
+toc()
+print(Sys.time())
+
+saveRDS(df, paste0(filename, '.rds'))
+```
+
+```{r}
+# df
+# df %>% group_by(density) %>% summarise(sum(vg > n) / probe)
+# 
+# ggplot(df, aes(x=as.factor(density), y=ratio)) + 
+#   geom_boxplot(fill="slateblue", alpha=0.3) +
+#   ggtitle(paste0("bipartite-100 ", filename)) +
+#   xlab("density") +
+#   ylab("independent set / bipartition")
+# 
+# ggsave(paste0(filename, '.eps'), device = 'eps')
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(formattable)
+
+filename <- paste0('../tests/test2-10')
+df <- readRDS(paste0(filename, '.rds'))
+
+df <- df %>% group_by(density, n) %>% summarise(alfa=(sum(v1 > n) / n()))
+
+ns <- unique(df$n)
+df3 <- data.frame()
+
+for(i in 1:length(ns)) {
+  dftmp <- df[df$n == ns[i],"alfa"]
+  row <- as.data.frame(t(dftmp))
+  row.names(row) <- ns[i]
+  colnames(row) <- density
+  
+  df3 <- rbind(df3, row)
+}
+
+formattable(df3)
+```
+
+```{r}
+library(igraph)
+library(parallel)
+library(tictoc)
 library(dplyr)
 
 source('../src/2-coloring.R')
